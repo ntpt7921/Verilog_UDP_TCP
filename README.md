@@ -25,12 +25,6 @@ vvp a.out
 ```
 trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư viện và trình biên dịch sẽ dùng để tìm module bị thiếu, `-g2012` dùng để báo rằng chuẩn được dùng sẽ là SystemVerilog (IEEE 1800-2012) - phần mở rộng thêm chỉ dùng để viết testbench. `iverilog` sẽ xuất ra một file (trường hợp này là `a.out`). Để chạy file này ta dùng `vvp`.
 
-## Đóng góp
-
-Từng giao thức sẽ được phát triển riêng trong từng branch được đặt tên tương ứng (vd: Các phần riêng của TCP sẽ được viết trong branch TCP). Hiện tại main đã hoàn thành UDP.
-
-Để đóng góp và thay đổi nội dung dự án, các thành viên có quyền mở commit để duyệt lại trước khi được chấp nhận.
-
 ## Tiến độ
 
 - Tài liệu
