@@ -1,0 +1,156 @@
+Cập nhật ngày 30/11
+
+User Datagram Protocol (UDP)
+---------------------------------------
+* TỔNG QUAN
+
+Trong mạng máy tính, UDP là một trong những thành phần chủ chốt của bộ Internet protocol. Với UDP, các ứng dụng máy tính có thể gửi đi các thông tin (được gọi là các datagram) tới với host khác trên cùng một mạng IP (Internet protocol).
+
+UDP dùng một mô hình kết nối không trạng thái đơn giản với ít cơ chế giao thức. Không có đảm bảo rằng gói tin sẽ tói được người nhận, theo đúng thứ tự và không bị lặp nhiều lần.
+
+UDP thích hợp cho các ứng dụng mà việc kiểm và sửa lỗi là không cần thiết hay được thực hiện ở trong chương trình (nằm ở tầng ứng dụng); UDP tránh việc thực hiện các chức năng trên trong protocol stack. Những ứng dụng nhạy cảm về thời gian thường dùng UDP vì việc bỏ gói tin sẽ tốt hơn là đợi khoảng delay truyền lại gói tin đó (khoản delay này có thể là không chấp nhận được trong các hệ thời gian thực).
+
+Giao thức này được thiết kết bởi David P. Reed vào 1980 và được định nghĩa trong RFC 786.
+
+Ứng dụng có thể dùng các socket (kết hợp của một địa chỉ IP và một port) để thiết lập liên lạc từ host này đến host khác. Một ứng dụng sẽ sử dụng một socket như endpoint truyền nhận dữ liệu của mình. Một cổng (port) sẽ được xác định bởi số của cổng, một giá trị nguyên 16 bit, với tối đa 2^16 cổng (0-65535).
+
+---------------------------------------
+* CẤU TRÚC UDP DATAGRAM
+
+ 0      7 8     15 16    23 24    31
++--------+--------+--------+--------+
+|     Source      |   Destination   |
+|      Port       |      Port       |
++--------+--------+--------+--------+
+|                 |                 |
+|     Length      |    Checksum     |
++--------+--------+--------+--------+
+|
+|          data byte ...
++----u------------ ...
+  (Format cho UDP header + dữ liệu)
+     
+Khi tổng hợp một gói tín gửi đến người nhận theo UDP, hệ thống sẽ tạo ra một chuỗi 8 byte header thêm vào đầu của phần byte data cần gửi. UDP header cùng với data payload tạo nên một đơn vị thông tin riêng goi là datagram.
+
+Phần header chứa 4 trường, mỗi trường có độ dài 2 byte (16 bit). Phần dữ liệu sẽ đi sau phần header và là phần dữ liệu cần truyền của ứng dụng tầng trên.
+
+Trong IPv4, trường Source port và checksum là không bắt buộc. Trong IPv6 thì chỉ còn Source port là không bắt buộc.
+
++Source port: Trường này ghi lại port người gửi, và nếu có dùng thì nên được ngầm hiểu là cổng để gửi lại reply. Nếu không dùng thí trường này sẽ là số 0 (16 bit 0). 
++Destination port: Tương tự như trường Source, nhưng ghi lại địa chỉ cổng mà gói tin sẽ được gửi tới. Bắt buộc. 
++Length: Trường này ghi lại độ dài theo byte của datagram (header+data). Độ dài tối thiểu là 8 (chỉ có header và không data). Bắt buộc. 
++Checksum: Trường này có thể được dùng trong việc dò lỗi của datagram. Nếu không dùng thì sẽ là 0 (16 bit 0).
+
+---------------------------------------
+* TÍNH TOÁN CHECKSUM
+
+Tui sẽ chỉ miêu tả việc tính toán checksum đối với protocol stack dùng IPv4, IPv6 có thể được tính gần giống vậy vói một số thay đổi nhỏ. Nhưng hiện tại thì tui muốn tập trung implement IPv4 stack trước. Các mục dưới đây tui cho các ông hiều về số bù một và biết cách tính toán đối với chúng.
+
+ 0      7 8     15 16    23 24    31
++--------+--------+--------+--------+
+|          source address           |     |
++--------+--------+--------+--------+     |
+|        destination address        |     | Phần pseudo header
++--------+--------+--------+--------+     |
+|  zero  |protocol|   UDP length    |     |
++--------+--------+--------+--------+
+|     Source      |   Destination   |     |
+|      Port       |      Port       |     |
++--------+--------+--------+--------+     |
+|                 |                 |     | Phần UDP datagram
+|     Length      |    Checksum     |     |
++--------+--------+--------+--------+     |
+|                                         |
+|          data byte ...                  |
++----u------------ ...
+(Cấu trúc tổng hợp pseudo header và UDP datagram)
+
+Phương pháp tính checksum được định nghĩa trong RFC 768, với một số tối ưu nêu trong RFC 1071.
+
+Ta giả dụ sự tồn tại của một IP header giả (pseudo IP header) - ý chỉ một header mà chỉ mang một số nhưng không phải tất cả các trường của header IP thật. Header giả này sẽ nằm trước phần datagram UDP. Các trường của header này là:
++Source address: Địa chỉ IPv4 của nguồn gửi gói tin IP (vd: 123.123.0.1), dài 32 bit.
++Destination address: Địa chỉ IPv4 đích, dài 32 bit.
++Zero: Là 8 bit 0.
++Protocol: Mang giá trị 17 (0x11), xem https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
++UDP length: Là độ dài byte của UDP datagram, bằng với trường Length.
+
+Tất cả cảc cụm word 16 bit bắt đầu từ bit 0 thuộc cấu trúc pseudo header+UDP datagram (bỏ cụm tương ứng với trường checksum, tại đó là cái chưa có mà mình đang muốn tính) sẽ được cộng bù một với nhau và cho ra một tổng. Trong trường hợp cấu trúc nêu trên có độ dài không là bội số của 16 bit thì ta sẽ đắp phần còn thiếu phía sau bằng bit 0 để tạo ra word cuối cùng. Tổng có được sẽ được đảo bù một và kết quả sẽ là giá trị checksum của datagram UDP.
+
+VD: Ta cho một cấu trúc pseudo IP header + UDP datagram như sau:
++Source address: 152.1.51.27 (0x9801, 0x331b)
++Destination address: 152.14.94.75 (0x980e, 0x5e4b)
++Zero: 0x00        | Kết hợp hai phần này ta được 16 bit tiếp (0x0011)
++Protocol: 0x11    |
++UDP length: 0x000a (10 byte)
++Source port: 0xa08f
++Destination port: 0x2694
++Length: 0x000a
++Data: 0x6262
+Ta tính tổng bù một của tất cả các word của trên: 
+0x9801 +' 0x331b +' 0x980e +' 0x5e4b +' 0x0011 +' 0x000a +' 0xa08f +' 0x2694 +'
+0x000a +' 0x6262 = 0xeb21. 
+Đảo bù một giá trị tổng lại ta sẽ có 0x14de, đây là checksum cần tính.
+
+IPv4 và IPv6 chỉ khác nhau về phần pseudo header dùng để tính.
+
+---------------------------------------
+* KIỂM TRA CHECKSUM
+
+Đối với thiết bị có vai trò xủ lý gói tin UDP nhận được, ta không cần phải tạo ra checksum nhưng lại cần phải kiểm tra gói tin với checksum nhận được để xác định liệu đã có lỗi phát sinh trong quá trình truyền.
+
+Việc kiểm tra checksum thật ra rất đơn giản, ta cũng vẫn sẽ giả dụ có tồn tại một pseudo header như đã nói ở trên và tính tổng bù một của tất cả các word 16 bit trong cấu trúc pseudo header+UDP datagram. Nếu kết quả tổng tính được là 0xffff (16 bit 1) thì ta kết luận gói tin không lỗi.
+
+---------------------------------------
+* CÁC TÍNH CHẤT CÓ KHẢ NĂNG SỬ DỤNG ĐỂ TỐI ƯU VIỆC TÍNH TOÁN CHECKSUM
+
+Phần này tui viết chủ yếu để cho đầy đủ, ai implement cái này thì tập trung vào tính chất 3 + 4.
+
+Giả sử ta muốn tính checksum của một dải byte A, B, C, D, ... , Y, Z. Dùng kí hiệu [a,b] để chỉ cụm word 16 bit tạo thành từ byte a và byte b, ta có tổng bù một được ghi dưới hai trường hợp sau:
+{1} [A,B] +' [C,D] +' ... +' [Y,Z]
+{2} [A,B] +' [C,D] +' ... +' [Z,0] (ở đây ta có bù 0 cho word cuối cùng)
+
+Tổng cần tính này có một số tính chất đặc biệt mà ta có thể tận dụng để đẩy nhanh việc tinh toán.
+
+1. Giao hoán, kết hợp và phân giải 
+Miễn rằng vị trí byte trong một word không bị hoán đổi, các word có thể được cộng lại với nhau theo thứ tự tùy ý (giao hoán), gộp nhóm lại để cộng (kết hợp) và phân giải (ta có thể tách một word ra thành nhiều phần miễn sao tổng của các phần này bằng word ban đầu - ngược lại của kết hợp).
+Ví dụ, {1} có thể được ghi lại như sau:
+{3} ( [A,B] +' [C,D] +' ... +' [J,0] ) +' ( [0,K] +' ... +' [Y,Z] )
+
+2. Không phụ thuộc thứ tự byte
+Tổng có thể được tính theo cả hai thứ tự byte. Ta có thể tính tổng này theo:
+{4} [B,A] +' [D,C] +' ... +' [Z,Y]
+thì kết quả cũng sẽ giống như {1}, chỉ khác ở chỗ thứ tự byte sẽ bị đảo lại (nếu
+{1} tính ra [X,Y] thì {4} tính ra [Y,X]).
+
+3. Tính toán song song
+Nếu có khá năng tính toán với lượng bit là bội số của 16, ta có thể tận dụng khả năng để tính toán "song song" tổng này. Ví dụ nếu ta có thể cộng cùng lúc 32 bit, thì trong một lần ta có thể cộng một lần 2 cặp word: [A,B,C,D] +' ... Sau khi tổng đã được tính, ta tách kết quả tính được ra hai phần 16 bit rồi tính tổng của chúng, kêt quả cuối cùng sẽ giống với khi ta không tính toán "song song".
+
+4. Delayed carry
+Việc tính toán có thể tối ưu hơn nếu ta chỉ delay cộng lại phần end-around carry (đặc biệt của riêng tổng bù một) cho tới khi đã cộng hết các word bằng cách dùng nhiều thanh ghi hơn số cần thiết. Các thanh ghi thừa sẽ được dùng để accumulate phần carry và có thể dùng để tính sau.
+
+VD: Cho phép tính checksum ò trên
+0x9801 +' 0x331b +' 0x980e +' 0x5e4b +' 0x0011 +' 0x000a +' 0xa08f +' 0x2694 +'
+0x000a +' 0x6262 = 0xeb21
+Ta có thể tính các tổng bù một như tổng bình thường, với phần thừa tạo được lưu lại
+0x9801 + 0x331b + 0x980e + 0x5e4b + 0x0011 + 0x000a + 0xa08f + 0x2694 + 0x000a + 0x6262 = 0x2eb1f
+Sau đó ta chia kết quả ra làm hai phần 0x2 và 0xeb1f, cộng hai phần này lại ta
+cũng sẽ có 0xeb21.
+=> Ở đây ta đang sử dụng delayed carry
+
+---------------------------------------
+*TÀI LIỆU THAM KHẢO
+https://en.wikipedia.org/wiki/User_Datagram_Protocol
+https://people.engr.ncsu.edu/mlsichit/Teaching/407/Resources/udpChecksum.html
+https://datatracker.ietf.org/doc/html/rfc768
+https://datatracker.ietf.org/doc/html/rfc1071
+
+
+
+
+
+
+
+
+
+
+

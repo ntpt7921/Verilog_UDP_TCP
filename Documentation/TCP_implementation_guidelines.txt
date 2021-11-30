@@ -1,0 +1,167 @@
+Cập nhật ngày 30/11
+
+Transmission Control Protocol (TCP)
+
+---------------------------------------
+* TỔNG QUAN
+
+The Transmission Control Protocol (TCP) là một trong những giao thức chính của gói giao thức Internet (Internet protocol suite). Nó khởi nguồn từ một gói bổ trợ cho IP (Internet Protocol) và sau đó được tách ra riêng ra khỏi IP. Bởi vậy, toàn bộ gói này (TCP trên IP) thường được gọi là TCP/IP. TCP cung cấp khả năng truyền nhận một dòng byte một cách đáng tin cậy, có thứ tự  và được kiểm lỗi giữa các host sử dụng liên lạc với nhau qua mạng IP.
+
+TCP cung cấp dịch vụ thông tin nằm ở mức trung gian giữa tầng ứng dụng (application layer) và IP. Nó cho khả năng liên lạc host-to-host ở tầng giao vận (transport layer) của mô hình Internet. Một chương trình không cần biết các cơ chế cụ thể của việc truyền hận tin dựa vào một nối kết cụ thể, ví dụ như vậy phân mảnh IP (IP fragementation) để phù hợp với đơn vị truyền tối đa (maximum transmission unit - MTU) của một nối kết. Ở tầng giao vận, TCP đảm nhiệm việc thực hiện handshake và các chi tiết truyền nhận, cung cấp cho các chương trình một interface trù tượng hóa của liên kết mạng (thường là socket interface).
+
+Ở các tầng thấp hơn của stack protocol, bởi vì các yếu tố như sự tắc nghẽn mạch, balance tải lưu thông và sự khó đoán của hành vi mạng, các gói IP có thể bị mất, bị lặp hay bị giao sai thứ tự. TCP phát hiện và sử lí các vấn đề này: yêu cầu truyền lại đối với gói tin mất, xắp xếp lại theo thứ tự các gói tin và thập chí còn có cơ chế giảm tốc độ truyền để tránh nghẽn mạng. Với các dữ liệu gửi đi mà không nhận được, bên gửi sẽ được thông báo. Một khi TCP bên nhận đã tổng hợp đủ dữ liệu, nó sẽ chuyển tiếp dữ liệu đó cho ứng dụng tầng trên. TCP đã trù tượng hóa đi các chi tiết mạng cụ thể của tầng bên dưới.
+
+IP chịu trách nhiệm cho việc truyền gửi gói tin. Còn TCP chỉ quan tâm tới các segment - đơn vị thông tin truyền gửi mà dữ liệu được chia nhỏ thành nhằm giúp truyền đi hiệu quả trong mạng. Lấy ví dụ, khi môt file HTML được gửi đi từ một server, chương trình TCP của server sẽ chia nhỏ file thành các segment và chuyển tiếp chúng xuống tầng internet trong network stack. Tần internet sẽ bao các segment này lại và tạo ra các gói IP bằng cách thêm một phần header vào trước mỗi segment (header này có chứa địa chỉ IP người nhận). Khi mà TCP bên nhận đã lấy được các segment này (sau khi đã nhận được từ tầng internet bên nhận), nó sẽ xếp lại các segment và đảm bảo rằng không có lỗi xảy ra rồi chuyển file HTML này tới chương trình bên nhận.
+
+Bởi vì việc truyền nhận trong nhiều mạng là không đáng tin, TCP đạt được các tính chất của mình nhờ vào việc sử dụng kĩ thuật xác nhận với truyền lại. Kĩ thuật này đòi hỏi người nhận phải phản hồi xác nhận khi mà nó nhận được các dữ liệu. Người gửi sẽ giữ một danh sách các gói đã gửi và một timer để đếm thời gian từ lúc gửi cho tới hiện tại, các gói tin không nhận được xác nhận sau một khoảng thời gian nhất định sẽ được bên gửi truyền lại. Ở đây timer là cần thiết để tránh trường hợp mất hay hư gói tin.
+
+TCP được tối ưu để gửi thông tin chính xác chứ không gửi thông tin đúng lúc. Việc sử dụng TCP có thể tạo ra các khoảng delay tương đối lâu (trong khoảng vài giây) bởi việc đợi truyền lại gói tin hay đợi các gói tin sai thứ tự. Điều này có thể không phù hợp với các ứng dụng nhạy thời gian, lúc này UDP có thể được dùng nếu.
+
+TCP là giao thức dựa vào nối kêt (connection-oriented) - có nghĩa là bên gửi và bên nhận phải thiết lập một nối kết trước khi dữ liệu có thể được truyền (nối kết ở đây có thể hiểu là sự đồng ý truyền dữ liệu từ hai bên). Trong trường hợp server-client, bên server phải đang ở trạng thái nghe (passive open) để có thể đón được yêu cầu kết nối từ client trước khi một nối kêt có thể được thiết lập.
+
+TCP là một giao thức phức tạp. Dù các chỉnh sửa và nâng cấp đã được ứng dụng trong những năm qua, hoạt động cơ bản nhất của TCP vẫn không thay đổi đáng kể so với đặc tả đầu tiên của nó trong RFC 675, và đặc tả v4 trong RFC 793. Danh sách 8 đặc tả bắt buộc và hơn 20 thay đổi được khuyến nghị cao đã được liệt kê trong RFC 7414. Trong danh sách nó có RFC 2581, TCP Congestion Control (Kiểm soát nghẽn TCP), một trong những RFC về TCP quan trọng nhất trong những năm gần đây.
+
+Tập trung chủ yếu của tài liệu này được nhắm vào cấu trúc của segment TCP và việc đóng gói, giải mã segment TCP. Các chức năng khác (congestion control, flow control,...), mặc dù vô cùng quan trọng sẽ bị lướt qua. Phiên bản miêu tả trong tài liệu này sẽ phần nhiều lấy từ RFC 793, với các thay đổi nêu lên trong các RFC sau được ghi chú và thêm vào khi thích hợp (khi các thay đổi này phù hợp với tập trung của tài liệu). 
+
+---------------------------------------
+* CẤU TRÚC GÓI TIN
+
+0                   1                   2                   3
+0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|          Source Port          |       Destination Port        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                        Sequence Number                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Acknowledgment Number                      |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Data |           |U|A|P|R|S|F|                               |
+| Offset| Reserved  |R|C|S|S|Y|I|            Window             |
+|       |           |G|K|H|T|N|N|                               |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|           Checksum            |         Urgent Pointer        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                             data                              |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+Một TCP segment sẽ bao gồm phần header và phần data. Phần header chứa 10 trường bắt buộc và một trường Options tùy chọn. Phần data sẽ đi sau header và là thông tin muốn gửi đi. Độ dài của phần data không có trường riêng để miêu tả  mà sẽ được tính ra bằng cách trừ độ dài header TCP và header IP ra khỏi tổng độ dài gói tin IP (độ dài gói IP này sẽ được ghi trong header IP). Header TCP phải có độ dài là bội số của 32 bit, nếu không đủ, phần sau header đó sẽ được chèn vào các bit 0 để tạo đủ bội số.
+
+-Source Port: 16 bit 
+Là số cổng bên gửi
+
+-Destination Port: 16 bit
+Là số cổng bên nhận
+
+-Sequence Number: 32 bit
+Là số thứ tự của byte data đầu tiên trong segment này. Trừ khi SYN (miêu tả bên dưới) được sử dụng, lúc này trường này được hiểu là sequence number ban đầu (initial sequence number - ISN) (được dùng lúc và hai bên gửi và nhận thiết lập nối kết) và byte data đầu tiên sẽ có số thứ tự ISN+1.
+
+-Acknowledgement Number: 32 bit
+Nếu ACK (ở dưới) được sử dụng thì trường này được hiểu là giá trị sequence number tiếp theo mà người gửi gói tin đang mong đợi sẽ nhận được từ bên kia, và cũng có nghĩa là bên gửi gói tin xác nhận việc nhận được tất cả mọi data với sequence number trước giá trị này.
+
+-Data Offset: 4 bit
+Độ dài của phần header, tính bằng số word (nhóm 32 bit) phải offset kể từ đầu segment để có thể đến được phần data (bởi vậy mới gọi là data offset).
+
+-Reserved+Control Bíts: 12 bit
+Trong đặc tả RFC 793, Reserved sẽ có độ dài 6 bit, tiếp sau đó Control Bits sẽ chiếm 6 bit còn lại với các bit từ trái sang phải lần lượt đại diện cho các flag:
+   +URG: Chỉ trường URG Pointer quan trọng - Ít dùng và thường bị implement sai (khuyên không dùng bởi RFC 6093)
+   +ACK: Chỉ trường Acknowledgement Number quan trọng
+   +PSH: Hành động push - tin nhắn cho TCP stack báo hãy gửi phần dữ liệu này lên cho ứng dụng ngay
+   +RST: Reset lại kết nối.
+   +SYN: Dùng trong việc thiết lập nối kết ban đầu, đồng bộ hóa sequence number giữa hai bên gửi nhận
+   +FIN: Kết thúc nối kết.
+Trong RFC 3168, hỗ trợ  cho ECN (Explicit Congestion Notification - Thông báo nghẽn rõ ràng) được thêm vào trong cấu trúc segment bằng việc thêm 3 bit control. Các hệ thống sử dụng ứng dụng RFC này sẽ có phần Reserved giảm còn 3 bit và Control Bits sẽ dài 9 bit (3 bit thêm vào bên trái 6 bit cũ). Từ trái sang phải các bit thêm này là NS, CWR, ECE. Ta sẽ không áp dụng thay đổi này và giữ nguyên cấu trúc RFC 793, chủ yếu là vì ta sẽ không hiện thực các chức năng liên quan.
+
+-Window: 16 bit
+Số byte dữ liệu (tính từ giá trị sequence number đã được xác nhận gần nhất) mà bên gửi có thể nhận.
+
+-Checksum: 16 bit
+Tính toán tương tự như checksum UDP. Sẽ có một trường pseudo header có kích thước hệt như vậy. Trường Protocol trong pseudo header mang giá trị 6. Trường UDP Length thay bằng TCP Length, là độ dài của TCP segment.
+
+ 0      7 8     15 16    23 24    31
++--------+--------+--------+--------+
+|           Source Address          |
++--------+--------+--------+--------+
+|         Destination Address       |
++--------+--------+--------+--------+
+|  zero  |  PTCL  |    TCP Length   |
++--------+--------+--------+--------+
+
+-Urgent Pointer: 16 bit
+Sẽ không dùng, nhưng đọc được. Chỉ có ý nghĩa khi bit URG được set.
+
+-Options: Thay đổi độ dài được (0-320 bit)
+Độ dài của trường này sẽ được tính từ trường Data Offset. Sẽ là một chuỗi danh sách các option đặc biệt được dùng để thay đổi hoạt động của TCP một cách đáng kể. Không có thứ tự đặt sẵn cho các option, các option có thể xuất hiện theo bất kì thứ tự nào hợp lí. 
+Mỗi option bao gồm 3 bộ phận, ghi theo đúng thứ tự: Option-Kind (8 bit), Option-Length (8 bit), Option-Data (độ dài tùy option). Option-Kind chỉ loại option. Option-Length chỉ độ dài của toàn bộ option (cả ba mục), tính theo byte. Option-Data chứa dữ liệu liên quan nếu có.
+Một số trường chỉ có thể được dùng khi SYNC được set (được đánh dấu * ở bảng dưới).
+
++---------+---------+----------+----------------------------------------------+----------------+
+| Option- | Option- | Option-  | Mục đích                                     | Ghi chú        |
+| Kind    | Length  | Data     |                                              |                |
++=========+=========+==========+==============================================+================+
+| 0       | Không   | Không    | Đánh dấu hết danh sách option                | Trong RFC 793  |
++---------+---------+----------+----------------------------------------------+----------------+
+| 1       | Không   | Không    | Dùng để đệm giữa các option để tròn 32 bit.   | Trong RFC 793  |
+|         |         |          | Có thể tăng tốc độ ở một số kiến trúc máy.     |                |
++---------+---------+----------+----------------------------------------------+----------------+
+| 2*      | 4       | SS       | Kích cỡ segment tối đa                       | Trong RFC 793  |
++---------+---------+----------+----------------------------------------------+----------------+
+| 3*      | 3       | S        | Scale window                                 | Trong RFC 1323 |
++---------+---------+----------+----------------------------------------------+----------------+
+| 4*      | 2       | Không    | Cho phép dùng Selective Acknowledgement      | Trong RFC 2018 |
++---------+---------+----------+----------------------------------------------+----------------+
+| 5       | N(10,   | BBBB,    | Selective Acknowledgement                    | Trong RFC 793  |
+|         | 18, 26, | EEEE,... |                                              |                |
+|         | 34)     |          |                                              |                |
++---------+---------+----------+----------------------------------------------+----------------+
+| 8       | 10      | TTTT,    | Mã thời gian lúc gửi và mã thời gian nhận    | Trong RFC 1323 |
+|         |         | EEEE     | được gần đây nhất                            |                |
++---------+---------+----------+----------------------------------------------+----------------+
+
+Ví dụ : 
+   +Option-Kind 1 chỉ dùng để đệm, không có ý nghĩa đặc biệt nên không có Option-Length và Option-Data. 
+   +Option-Kind 2 sẽ có độ dài là 4 byte (2 byte dùng miêu tả kích cỡ  segment tối đa).
+
+-Padding: Độ dài thay đổi. Chỉ là các bit 0.
+
+---------------------------------------
+* HOẠT ĐỘNG CỦA GIAO THỨC
+
+Phần này không cần thiết lắm với việc đóng gói và giải mã, nên tui miêu tả sơ sài. Sẽ bổ sung thêm.
+
+Hoạt động của TCP có thể chia thành 3 giai đoạn chính. 
+   +Thiết lập kết nối: Là một quá trình handshake nhiều bước nhằm thiết lập kết nối trước khi đi vào giao đoạn truyền tin.
+   +Truyền tin: Nằm ngoài phạm vi yêu cầu, hầu hết các chức năng flow control, congestion control sẽ diễn ra ở đây.
+   +Kêt thúc: Đóng kết nối và giải phóng các tài nguyên được dùng trong kết nối.
+   
+-THIẾT LẬP KẾT NỐI:
+Trước khi thiết lập kết nối với server, bên server phải mở một cổng TCP và nghe từ cổng đó (passive  open) yêu cầu kết nối của client. Một client có thể thiết lập kết nối (active open) với một server đang nghe yêu cầu qua quá trình 3-way (hay 3 bước) handshake.
+
+   1. SYN: Client sẽ gửi một gói SYN (bit SYN được set) tới cho server. Client sẽ đặt Sequence Number gửi đi thành một giá trị ngẫu nhiên A.
+   2. SYN+ACK: Server sẽ phản hồi bằng việc gửi lại một gói tin SYN+ACK (bit SYN và ACK được set). Trường Acknowledgment Number sẽ được đặt A+1, Sequence Number gửi đi thành một giá trị ngẫu nhiên B.
+   3. ACK: Cuối cùng, client phản hồi bằng một gói ACK về cho server. Trường Acknowledgment Number sẽ được đặt A+1, Sequence Number đặt là B+1.
+
+Bước 1 và 2 thiết lập và xác nhận sequence number theo một hướng (server xác nhận sequence number của client). Bước 2 và 3 thiết lập và xác nhận theo hướng ngược lại. Sau khi hoàn thành các bước này, một kết nối full-duplex đã được thiết lập.
+
+-KẾT THÚC KẾT NỐI:
+https://commons.wikimedia.org/wiki/File:TCP_CLOSE.svg#/media/File:TCP_CLOSE.svg
+(coi hình dễ hơn - tui làm biếng vẽ vào trong này)
+
+Quá trình kết thúc kết nối dùng four-way handshake, trong đó mỗi bên của kết nối sẽ ngừng kết nối một cách độc lập. Khi một bên muốn dừng kết nối, có sẽ truyền đi một gói tin FIN. Gói tin này sẽ được bên còn lại xác nhận với một gói ACK. Bởi vậy khi muốn dừng kết nối từ cả hai bên, sẽ có 2 cặp FIN-ACK được gửi đi. Sau khi bên gửi gói FIN ban đầu đã gửi gói ACK cuối cùng, nó sẽ đợi một khoảng thời gian trước khi đóng kết nối. Trong khoảng thời gian đợi đó cổng TCP không thể tạo kết nối mới: đảm bảo rằng các gói tin đến trễ từ kết nối cũ sẽ không bị nhầm với gói từ kết nối mới.
+
+(Cần bổ sung: Selective ACK, timestamp, window scale, MSS, phương thức phát hiện mất gói tin)
+
+
+
+
+
+
+---------------------------------------
+*TÀI LIỆU THAM KHẢO
+https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Window_scaling
+https://www.rfc-editor.org/rfc/rfc793
+https://www.rfc-editor.org/rfc/rfc7414
+
+
+
