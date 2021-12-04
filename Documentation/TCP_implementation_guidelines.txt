@@ -26,8 +26,8 @@ Tập trung chủ yếu của tài liệu này được nhắm vào cấu trúc 
 ---------------------------------------
 * CẤU TRÚC GÓI TIN
 
-0                   1                   2                   3
-0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 |          Source Port          |       Destination Port        |
 +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -96,29 +96,30 @@ Sẽ không dùng, nhưng đọc được. Chỉ có ý nghĩa khi bit URG đư�
 Mỗi option bao gồm 3 bộ phận, ghi theo đúng thứ tự: Option-Kind (8 bit), Option-Length (8 bit), Option-Data (độ dài tùy option). Option-Kind chỉ loại option. Option-Length chỉ độ dài của toàn bộ option (cả ba mục), tính theo byte. Option-Data chứa dữ liệu liên quan nếu có.
 Một số trường chỉ có thể được dùng khi SYNC được set (được đánh dấu * ở bảng dưới).
 
-+---------+---------+----------+----------------------------------------------+----------------+
-| Option- | Option- | Option-  | Mục đích                                     | Ghi chú        |
-| Kind    | Length  | Data     |                                              |                |
-+=========+=========+==========+==============================================+================+
-| 0       | Không   | Không    | Đánh dấu hết danh sách option                | Trong RFC 793  |
-+---------+---------+----------+----------------------------------------------+----------------+
-| 1       | Không   | Không    | Dùng để đệm giữa các option để tròn 32 bit.   | Trong RFC 793  |
-|         |         |          | Có thể tăng tốc độ ở một số kiến trúc máy.     |                |
-+---------+---------+----------+----------------------------------------------+----------------+
-| 2*      | 4       | SS       | Kích cỡ segment tối đa                       | Trong RFC 793  |
-+---------+---------+----------+----------------------------------------------+----------------+
-| 3*      | 3       | S        | Scale window                                 | Trong RFC 1323 |
-+---------+---------+----------+----------------------------------------------+----------------+
-| 4*      | 2       | Không    | Cho phép dùng Selective Acknowledgement      | Trong RFC 2018 |
-+---------+---------+----------+----------------------------------------------+----------------+
-| 5       | N(10,   | BBBB,    | Selective Acknowledgement                    | Trong RFC 793  |
-|         | 18, 26, | EEEE,... |                                              |                |
-|         | 34)     |          |                                              |                |
-+---------+---------+----------+----------------------------------------------+----------------+
-| 8       | 10      | TTTT,    | Mã thời gian lúc gửi và mã thời gian nhận    | Trong RFC 1323 |
-|         |         | EEEE     | được gần đây nhất                            |                |
-+---------+---------+----------+----------------------------------------------+----------------+
++---------+---------+----------+----------------------------------------------+
+| Option- | Option- | Option-  | Mục đích                                     |
+| Kind    | Length  | Data     |                                              |
++=========+=========+==========+==============================================+
+| 0       | Không   | Không    | Đánh dấu hết danh sách option                |
++---------+---------+----------+----------------------------------------------+
+| 1       | Không   | Không    | Dùng để đệm giữa các option để tròn 32 bit    |
+|         |         |          | Có thể tăng tốc độ ở một số kiến trúc máy      |
++---------+---------+----------+----------------------------------------------+
+| 2*      | 4       | SS       | Kích cỡ segment tối đa                       |
++---------+---------+----------+----------------------------------------------+
+| 3*      | 3       | S        | Window scale                                 |
++---------+---------+----------+----------------------------------------------+
+| 4*      | 2       | Không    | Cho phép dùng Selective Acknowledgement      |
++---------+---------+----------+----------------------------------------------+
+| 5       | N(10,   | BBBB,    | Selective Acknowledgement                    |
+|         | 18, 26, | EEEE,... |                                              |
+|         | 34)     |          |                                              |
++---------+---------+----------+----------------------------------------------+
+| 8       | 10      | TTTT,    | Mã thời gian lúc gửi và mã thời gian nhận    |
+|         |         | EEEE     | được gần đây nhất                            |
++---------+---------+----------+----------------------------------------------+
 
+Để biết thêm về chức năng của các option 2, 3, 4, 5, 8, xem phần "Một số điểm bổ sung" ở dưới.
 Ví dụ : 
    +Option-Kind 1 chỉ dùng để đệm, không có ý nghĩa đặc biệt nên không có Option-Length và Option-Data. 
    +Option-Kind 2 sẽ có độ dài là 4 byte (2 byte dùng miêu tả kích cỡ  segment tối đa).
@@ -150,16 +151,61 @@ https://commons.wikimedia.org/wiki/File:TCP_CLOSE.svg#/media/File:TCP_CLOSE.svg
 
 Quá trình kết thúc kết nối dùng four-way handshake, trong đó mỗi bên của kết nối sẽ ngừng kết nối một cách độc lập. Khi một bên muốn dừng kết nối, có sẽ truyền đi một gói tin FIN. Gói tin này sẽ được bên còn lại xác nhận với một gói ACK. Bởi vậy khi muốn dừng kết nối từ cả hai bên, sẽ có 2 cặp FIN-ACK được gửi đi. Sau khi bên gửi gói FIN ban đầu đã gửi gói ACK cuối cùng, nó sẽ đợi một khoảng thời gian trước khi đóng kết nối. Trong khoảng thời gian đợi đó cổng TCP không thể tạo kết nối mới: đảm bảo rằng các gói tin đến trễ từ kết nối cũ sẽ không bị nhầm với gói từ kết nối mới.
 
-(Cần bổ sung: Selective ACK, timestamp, window scale, MSS, phương thức phát hiện mất gói tin)
+---------------------------------------
+* MỘT SỐ ĐIỂM BỔ SUNG
 
+-PHƯƠNG THỨC PHÁT HIỆN MẤT GÓI TIN:
 
+TCP dùng một số đánh dấu (gọi là sequence number) để xác định mỗi byte dữ liệu. Số đánh dấu này sẽ dùng để xác định thứ tự byte để các gói tin có thể được xếp lại theo đúng thứ tự. Số đánh dấu của byte đầu tiên từ hai bên gửi và nhận được mỗi bên tự chọn và được gửi trong gói tin SYN đầu tiên. Giá trị đầu tiên này có thể tùy chọn, và nên khó đoán để tránh khả năng bị đoán ra và lợi dụng để chiếm đoạt kết nối.
 
+Các gói tin ACK được gửi bởi bên nhận để báo với bên gửi rằng dữ liệu đẫ nhận được cho đến một byte nào đó.
+
+Tính đáng tin cậy của TCP bắt nguồn từ việc bên gửi sẽ biết được phần dữ liệu bị mất và gửi lại nó. TCP dùng hai kĩ thuật đơn giản để xác định dữ liệu mất. Quá thời gian truyền lại (Retransmission timeout - RTO) và ACK lặp (DupAcks).
+
+    +RTO: Khi bên gửi truyền đi một gói tin, nó sẽ bắt đầu đếm ngược thời gian từ  giá trị xấp xỉ thời gian mà gói tin sẽ được xác nhận. Nếu đã quá thời gian này mà vẫn không nhận được xác nhận, gói tin sẽ được truyền lại, lần này với xấp xỉ thời gian xác nhận mới.
+    +DupAcks: Nếu một gói tin trong một chuỗi các gói tin (ví dụ số 100) bị mất, bên nhận sẽ không thể gửi gói ACK với giá trị quá 100 được. Bởi vậy bên nhận sẽ gửi lại gói ACK với giá trị 99 (ý nói rằng đã nhận không lỗi được tới gói 99), kể cả khi nó nhận được các gói tin 101, 102,...Sự lặp lại các gói ACK cùng giá trị này sẽ báo hiệu với bên gửi rằng đã mất gói tin. Bên gửi sau khi nhận được tới một số lượng nhất định các gói ACK lặp này sẽ hiểu là gói 100 đã bị mất và gửi lại gói này. Ngoài ra một số trường hợp còn áp dụng Selective Acknowledgement để báo hiệu rõ rằng về các gói tin đã được nhận.
+
+-FLOW CONTROL:
+
+TCP áp dụng flow control (có thê hiểu là kiểm soát tốc độ gửi) để tránh việc bên gửi sẽ gửi quá nhiều dữ liệu quá nhanh để bên nhận có thể bắt được và xử lí kịp thời. Sự tồn tại của cơ chế flow control là thiết yếu trong môi trường mà nhiều máy với tốc độ xử lí khác nhau dùng sử dụng mạng để liên lạc (ví dụ máy tính để bàn đang gửi dữ liệu cho một chiếc smartphone, chiếc điện thoại này phải có các để kiềm chế dòng dữ liệu để không bị quá tải. 
+
+Trường Window của gói tin TCP phục vụ cho mục đích này. Trong mỗi một gói TCP, người gửi (ví dụ điện thoại) sẽ gửi đi trong trường Window số lượng byte còn lại mà nó có thể dùng để buffer cho các gói tin mới. Bên còn lại (ví dụ máy tính) chỉ có thể gửi đi đúng lượng dữ liệu đó, trước khi nó phải dừng lại để đợi xác nhận và cập nhật giá trị window mới từ điện thoại.
+
+-MAXIMUM SEGMENT SIZE:
+
+Maximum segment size (kích cỡ gói tin tối đa) là giá trị byte lớn nhất của một gói tin mà mỗi bên sẵn sàng nhận. Để đạt được hiệu năng tối đa MSS nên được chọn đủ nhỏ để tránh hiện tượng phân mảnh IP (IP fragmetation). Giá trị này được chọn bởi mỗi bên và truyền đi tới bên còn lại khi thiết lập kết nối (dùng option MSS).
+
+MSS là một giá trị độc lập với giá trị trong trường . MSS chỉ giới hạn độ dài tối đa của một gói tin, còn trường Window chỉ giới hạn tạm thời của khả năng xử lí gói tin mỗi bên. 
+
+-SELECTIVE ACKNOWLEDGEMENT:
+
+Việc phụ thuộc chỉ vào việc dò ACK lặp của giao thức TCP gốc có thể dẫn đến sự thiếu hiệu quả khi có nhiều gói tin bị mất. Ví dụ, cho rằng các byte đánh số 1000 đến 10999 được gửi trong 10 gói TCP kích cỡ bằng nhau, mà gói thứ 2 (chứa byte 2000 đến 2999) bị mất. Nếu chỉ dùng việc dò ACK lặp, bên nhận chỉ có thể gửi đi giá trị ACK 2000 (ý chỉ rằng đã nhận được đến byte 1999), và không thể xác nhận rằng nó đã nhận thành công các byte 3000 đến 10999. Bởi vậy nên bên gửi có thể phải gửi lại hết phần dữ liệu bắt đầu từ byte 2000.
+
+Để giảm nhẹ vấn đề này, TCP còn sử dụng thêm SACK (Selective ACK) option. SACK cho phép bên nhận báo hiệu rằng có tồn tại các khối không liên tục các gới tin được được nhận thành công. Ta có thể dùng một số lượng nhất định các khối SACK này, với mỗi khỗi được giới hạn bởi rìa trái (số đánh dấu đầu tiên của khối) và rìa phải (số đánh dấu tiếp sau số của byte cuối cùng của khối) để xác nhận một cách chọn lọc khối các gói tin. Trở lai trường hợp ví dụ trên, bên nhận bây giờ có thể gửi một gói ACK 2000 chứa option SACK 3000->11000. Bên gửi sau khi nhận được gói tin đã có đủ thông tin để xác nhận chỉ có gói tin thứ 2 bị mất, và sẽ chỉ truyền lại gói tin với số byte 2000 đến 2999.
+
+Việc sử dụng SACK là không bắt buộc, và chỉ có thể được sử dụng khi hai bên đồng ý dùng. Việc xác nhận từ hai bên này sẽ được thực hiện khi thiết lập kết nối (dùng option để báo hiệu cho phép dùng SACK).
+
+-WINDOW SCALE:
+
+Trong các ứng dụng mạng băng thông cao, giá trị window lớn có thể là một yêu cầu quan trọng. Mặt khác, do giới hạn số lượng bit dùng cho trường, giá trị  TCP window tối đa là 65535 byte. Và bởi vì không thể mở rộng độ lớn của trường, một hệ số mở rộng được sử dụng. 
+
+Option Window scale được dùng để phục vụ chức năng tăng kích cỡ tối đa của trường window. Nó sẽ mang giá trị số lượng bit dịch trái của trường window, giá trị sau phép dịch trái bit này sẽ được hiểu là giá trị window mở rộng. Nói cách khác, giá trị window mở rộng = giá trị window ban đầu * 2^(giá trị option window scale). 
+
+Option Window scale này chỉ có thể dùng khi hai bên thiết lập giao thức. Mỗi bên phải gửi đi giá trị window scale của mình trong bước này.
+
+-TIMESTAMP:
+
+TCP timestamp option có thể được dùng để xác định thức tự mà các gói tin được gửi đi. TCP timestamp thường sẽ không chính xác với đồng hồ trên từng hệ thống mà bắt đầu từ một giá trị ngẫu nhiên nào đó.
+
+Có hai trường nhỏ trong option này: 4 byte giá trị timestamp của người gửi (của bên A) và 4 byte giá trị timestamp nhận được gần đây nhất từ bên còn lại (bên B).
+
+Có khả năng xảy ra trường hợp số đánh dấu (sequence number), một giá trị 32 bit, sau một hồi sử dụng sẽ bị dùng hết và lặp lại giá trị số đánh dấu của byte đầu tiên. Để tránh bị nhầm lẫn hai gói tin có phần bị trùng số đánh dấu, timestamp có thể được dùng.
 
 
 
 ---------------------------------------
 *TÀI LIỆU THAM KHẢO
-https://en.wikipedia.org/wiki/Transmission_Control_Protocol#Window_scaling
+https://en.wikipedia.org/wiki/Transmission_Control_Protocol
 https://www.rfc-editor.org/rfc/rfc793
 https://www.rfc-editor.org/rfc/rfc7414
 

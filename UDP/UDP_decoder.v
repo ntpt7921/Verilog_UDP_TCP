@@ -1,9 +1,9 @@
-module UDP_decoder (dest_ip, src_ip, len_ip, data, 
+module UDP_decoder (dest_ip, src_ip, len_udp, data, 
                     start, clk, reset,
-                    dest_port, src_port, len_udp, data_udp, wr_en, ok, fin);
+                    dest_port, src_port, len_data, data_udp, wr_en, ok, fin);
   input [31:0] dest_ip;
   input [31:0] src_ip;
-  input [15:0] len_ip;
+  input [15:0] len_udp;
   input [31:0] data;
   input start;
   input clk;
@@ -11,7 +11,7 @@ module UDP_decoder (dest_ip, src_ip, len_ip, data,
   
   output [15:0] dest_port;
   output [15:0] src_port;
-  output [15:0] len_udp;
+  output [15:0] len_data;
   output [31:0] data_udp;
   output wr_en;
   output ok;
@@ -19,7 +19,7 @@ module UDP_decoder (dest_ip, src_ip, len_ip, data,
   
   wire [31:0] dest_ip;
   wire [31:0] src_ip;
-  wire [15:0] len_ip;
+  wire [15:0] len_udp;
   wire [31:0] data;
   wire start;
   wire clk;
@@ -27,7 +27,7 @@ module UDP_decoder (dest_ip, src_ip, len_ip, data,
   
   reg [15:0] dest_port;
   reg [15:0] src_port;
-  reg [15:0] len_udp;
+  reg [15:0] len_data;
   reg [31:0] data_udp;
   reg wr_en;
   wire ok;
@@ -39,7 +39,7 @@ module UDP_decoder (dest_ip, src_ip, len_ip, data,
   wire [15:0] complete_checksum;
   one_complement_adder #(.LENGTH(32)) add1 (.a1(dest_ip), .a2(src_ip), .res(temp));
   one_complement_adder #(.LENGTH(32)) add2 
-  (.a1(temp), .a2({8'd0, 8'h11, len_ip}), .res(pseudo_header_checksum));
+  (.a1(temp), .a2({8'd0, 8'h11, len_udp}), .res(pseudo_header_checksum));
   
   wire enable_checksum;
   assign enable_checksum = !(next_state == IDLE || next_state == FIN);
@@ -88,7 +88,7 @@ module UDP_decoder (dest_ip, src_ip, len_ip, data,
         bytes_left <= 0;
         no_checksum <= 0;
       end
-      READ_1: bytes_left <= len_ip - 4;
+      READ_1: bytes_left <= len_udp - 4;
       READ_2: begin
         bytes_left <= (bytes_left > 4) ? (bytes_left - 4) : 0;
         if (data[15:0] == 16'h0000) no_checksum <= 1;
@@ -104,7 +104,7 @@ module UDP_decoder (dest_ip, src_ip, len_ip, data,
       IDLE: begin
         dest_port <= 0;
         src_port <= 0;
-        len_udp <= 0;
+        len_data <= 0;
         data_udp <= 0;
         wr_en <= 0;
         fin <= 0;
@@ -114,7 +114,7 @@ module UDP_decoder (dest_ip, src_ip, len_ip, data,
         dest_port <= data[15:0];
       end
       READ_2: begin
-        len_udp <= data[31:16];
+        len_data <= data[31:16];
       end
       READ_DATA: begin
         data_udp <= data;
@@ -128,7 +128,7 @@ module UDP_decoder (dest_ip, src_ip, len_ip, data,
       default: begin
         dest_port <= 0;
         src_port <= 0;
-        len_udp <= 0;
+        len_data <= 0;
         data_udp <= 0;
         wr_en <= 0;
         fin <= 0;

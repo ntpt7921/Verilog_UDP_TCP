@@ -1,11 +1,11 @@
 module UDP_decoder_tb ();
   reg [31:0] dest_ip;
   reg [31:0] src_ip;
-  reg [15:0] len_ip;
+  reg [15:0] len_udp;
   reg [31:0] data;
   reg start, clk, reset;
 
-  wire [15:0] dest_port, src_port, len_udp;
+  wire [15:0] dest_port, src_port, len_data;
   wire [31:0] data_udp;
   wire wr_en, ok, fin;
   
@@ -21,7 +21,7 @@ module UDP_decoder_tb ();
     reset = 0;
     change_ip_info('h9801_331b, 'h980e_5e4b, package_data_length + 8);
     load_new_package_data("Hello World");
-    send_udp_data('ha08f, 'h2694, len_ip);
+    send_udp_data('ha08f, 'h2694, len_udp);
     #2;
     $finish;  
   end
@@ -29,10 +29,10 @@ module UDP_decoder_tb ();
   
   task change_ip_info;
     input [31:0] src_ip_value, dest_ip_value;
-    input [15:0] len_ip_value;
+    input [15:0] len_udp_value;
     dest_ip = dest_ip_value;
     src_ip = src_ip_value;
-    len_ip = len_ip_value;
+    len_udp = len_udp_value;
   endtask
   
   
@@ -69,19 +69,19 @@ module UDP_decoder_tb ();
     #1 clk = ~clk;
   
   initial begin
-    $display("  T\tsip\t\tdip\t\tlip\tdata\t\tstart\tclk\treset\tsport\tdport\tlen_udp\tdata_udp\twr_en\tok\tfin\tudp.bytes_left\tudp_chksum");
+    $display("  T\tsip\t\tdip\t\tludp\tdata\t\tstart\tclk\treset\tsport\tdport\tlen_data\tdata_udp\twr_en\tok\tfin\tudp.bytes_left\tudp_chksum");
     $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t\t%h", 
-             $time, src_ip, dest_ip, len_ip, data, start, clk, reset,
-             src_port, dest_port, len_udp, data_udp, wr_en, ok, fin, 
+             $time, src_ip, dest_ip, len_udp, data, start, clk, reset,
+             src_port, dest_port, len_data, data_udp, wr_en, ok, fin, 
              dut.bytes_left, dut.complete_checksum);
    // $dumpvars(0, UDP_decoder_tb);
   end
   
   
   UDP_decoder dut 
-  (.dest_ip(dest_ip), .src_ip(src_ip), .len_ip(len_ip), .data(data), .start(start),
+  (.dest_ip(dest_ip), .src_ip(src_ip), .len_udp(len_udp), .data(data), .start(start),
    .clk(clk), .reset(reset), 
-   .dest_port(dest_port), .src_port(src_port), .len_udp(len_udp), .data_udp(data_udp),
+   .dest_port(dest_port), .src_port(src_port), .len_data(len_data), .data_udp(data_udp),
    .wr_en(wr_en), .ok(ok), .fin(fin));
   
 endmodule

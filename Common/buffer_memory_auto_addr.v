@@ -6,7 +6,7 @@ module buffer_memory_auto_addr (data_in, rd_en, wr_en, clk, reset, data_out, dat
   
   wire [31:0] data_in;
   wire rd_en, wr_en, clk, reset;
-  reg [31:0] data_out;
+  wire [31:0] data_out;
   wire data_av;
   
   reg [13:0] count_in, count_out;

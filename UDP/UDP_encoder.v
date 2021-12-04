@@ -106,7 +106,7 @@ module UDP_encoder (src_port, dest_port, len, data,
       end
       FIN: begin
         pkg_data <= 0;
-        if (!no_chksum) checksum_out <= accum_checksum;
+        if (!no_chksum) checksum_out <= ~accum_checksum;
         else checksum_out <= 0;
         wr_en <= 0;
         fin <= 1;

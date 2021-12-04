@@ -29,15 +29,15 @@ trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư vi
 
 - Tài liệu
   - [x] UDP
-  - [x] TCP
+  - [ ] TCP
   - [ ] IP
   - [ ] Sơ đồ khối kiến trúc hệ thông
 - UDP
   - [x] Decoder
   - [x] Encoder 
 - TCP
-  - [x] Decoder
-  - [x] Encoder 
+  - [ ] Decoder
+  - [ ] Encoder 
 - IP
   - [ ] Decoder
   - [ ] Encoder
