@@ -4,7 +4,13 @@ module TCP_encoder_tb ();
   reg f_urg, f_ack, f_psh, f_rst, f_syn, f_fin;
   reg [15:0] window;
   reg [15:0] urg_ptr;
-  reg [3:0] opt_word;
+  
+  reg [8:0] option_av;
+    reg [15:0] mss; // option 2
+    reg [7:0] scale_wnd; // option 3
+    reg [2:0] sack_nbr; // option 5
+      reg [63:0] sack_n0, sack_n1, sack_n2, sack_n3; // option 5
+    reg [63:0] time_stp; // option 8
   
   reg [31:0] data;
   reg [15:0] len;
@@ -22,11 +28,14 @@ module TCP_encoder_tb ();
   initial begin
     clk = 0;
     change_tcp_header_info('ha08f, 'h2694, 1, 2, 6'b11_1111, 3, 4);
-    opt_word = 1;
+    change_tcp_option_info(9'b0_0010_0001, 16'h1234, 2, 
+                           1, 64'h1111_1111_1111_1111, 0, 0, 0,
+                           64'h1234_1234_1234_1234);
     len = package_data_length;
     load_new_package_data("Hello World");
     send_tcp_data();
-    #12;
+    //@(posedge fin);
+    #20;
     $finish;  
   end
   
@@ -51,15 +60,30 @@ module TCP_encoder_tb ();
     urg_ptr = urg_ptr_value;
   endtask
   
+  task change_tcp_option_info;
+    input [8:0] option_av_v;
+    input [15:0] mss_v; // option 2
+    input [7:0] scale_wnd_v; // option 3
+    input [2:0] sack_nbr_v; // option 5
+    input [63:0] sack_n0_v, sack_n1_v, sack_n2_v, sack_n3_v; // option 5
+    input [63:0] time_stp_v; // option 8
+    option_av = option_av_v;
+    mss = mss_v; // option 2
+    scale_wnd = scale_wnd_v; // option 3
+    sack_nbr = sack_nbr_v; // option 5
+    sack_n0 = sack_n0_v; 
+    sack_n1 = sack_n1_v; 
+    sack_n2 = sack_n2_v;
+    sack_n3 = sack_n3_v; // option 5
+    time_stp = time_stp_v; // option 8
+  endtask
+  
   task send_tcp_data;
-    @(negedge clk);
     reset = 1;
     @(negedge clk);
     reset = 0;
     start = 1;
-    data_av = 1;
-    data = {8'd2, 8'd4, 16'h1234}; // 1 word option
-    @(negedge clk);
+    data_av = 1; 
     data = package_data[11*8-1:7*8];
     @(negedge clk);
     start = 0;
@@ -81,20 +105,24 @@ module TCP_encoder_tb ();
   wire [5:0] flag;
   assign flag = {f_urg, f_ack, f_psh, f_rst, f_syn, f_fin};
   initial begin
-    $display("  T\tsport\tdport\tseqn\t\tackn\t\tf\twindow\tu_pt\topt_w\tdata\t\tl\tclk\treset\tstart\tdata_av\tpkg_data\tchks\twr_en\tfin");
-    $monitor("%3d\t%h\t%h\t%h\t%h\t%b\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
+    $display("  T\tsport\tdport\tsn\t\tan\t\tflag\twnd\turg_ptr\tdata\t\tlen\tclk\trst\tstr\td_av\tpkg_d\t\tchks\twr_en\tfin");
+    $monitor("%3d\t%h\t%h\t%h\t%h\t%b\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%d", 
              $time, src_port, dest_port, seq_num, ack_num, 
-                    flag, window, urg_ptr, opt_word,
+                    flag, window, urg_ptr,
                     data, len, clk, reset, start, data_av,
-                    pkg_data, checksum_out, wr_en, fin);
+                    pkg_data, checksum_out, wr_en, fin, dut.opt_word);
    // $dumpvars(0, UDP_decoder_tb);
   end
   
-  TCP_encoder dut (.src_port(src_port), .dest_port(dest_port), .seq_num(seq_num), .ack_num(ack_num), 
+  TCP_encoder dut (.src_port(src_port), .dest_port(dest_port), 
+                   .seq_num(seq_num), .ack_num(ack_num), 
                    .f_urg(f_urg), .f_ack(f_ack), .f_psh(f_psh), 
                    .f_rst(f_rst), .f_syn(f_syn), .f_fin(f_fin),
-                   .window(window), .urg_ptr(urg_ptr), .opt_word(opt_word),
-                   .data(data), .len(len), .clk(clk), .reset(reset), .start(start), .data_av(data_av),
-                   .pkg_data(pkg_data), .checksum_out(checksum_out), .wr_en(wr_en), .fin(fin));
+                   .window(window), .urg_ptr(urg_ptr),
+                   .option_av(option_av), .mss(mss), .scale_wnd(scale_wnd), .sack_nbr(sack_nbr),
+                   .sack_n0(sack_n0), .sack_n1(sack_n1), .sack_n2(sack_n2), .sack_n3(sack_n3), 
+                   .time_stp(time_stp), .data(data), .len(len), .clk(clk), .reset(reset), 
+                   .start(start), .data_av(data_av), .pkg_data(pkg_data), 
+                   .checksum_out(checksum_out), .wr_en(wr_en), .fin(fin));
   
 endmodule

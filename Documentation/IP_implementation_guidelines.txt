@@ -1,0 +1,88 @@
+Internet Protocol version 4 (IPv4)
+
+---------------------------------------
+* TỔNG QUAN
+
+Internet Protocol (IP) là giao thức liên lạc ở tầng mạng (network layer) trong gói giao thức Internet. Các chức năng của nó hỗ trợ cho internetworking (việc nối các mạng máy tính rời rạc lại với nhau), từ đó cơ bản tạo nên Internet.
+
+IP có công việc chuyển giao các gói tin từ host gốc đến host nhận, nhưng chỉ phụ thuộc vào địa chỉ IP ở trong phần header mỗi gói tin.  IP định ra phương thức định địa chỉ cho các host, phương thức đóng gói dữ liệu vào các datagram (bao gồm việc sử lí phân mảnh và lắp ráp) và phương thức routing các datagram (việc chuyển tiếp các gói tin sang một node tiếp theo trong mạng gần đích đến hơn). Để hiện thực các yêu cầu này, IP định nghĩa ra cấu trúc của các gói tin và hệ thống địa chỉ.
+
+IPv4 là phiên bản thức tư của Internet Protocol. Nó là một trong những giao thức nền tảng của của mạng Internet và nhiều mạng chuyển gói khác.
+
+IPv4 là một giao thức không nối kết (connectionless), hoạt động không đảm bảo việc truyền nhận, đúng thứ tự là không bị lặp của các gói tin. Các điều trên, cộng thêm sự bảo toàn dữ liệu chính xác, sẽ được xử lý bởi các giao thức tầng cao hơn, ví dụ như TCP.
+
+Vệ mặt lịch sử, IP là dịch vụ không nối kết trong Transmission Control Program được đưa ra bởi Vint Cerf và Bob Kahn vào 1974, trong đó IP được bổ trợ bởi một dịch vụ dựa vào nối kết (connection-oriented) mà về sau sẽ trở thành cơ sở cho TCP. Sau đó hai dịch vụ này đã tác ra riêng, nhưng gói giao thức Internet vẫn thường được gọi là TCP/IP.
+
+Ở đây là sẽ tập trung vào việc giải mã và đóng gói một gói tin Internet cơ bản. Các chức năng như phân mảnh và lắp ráp gói tin bị bỏ qua. Cấu trúc gói tin được lấy phần lớn từ RFC 791, với các thay đổi của các RFC về sau bị bỏ qua. 
+
+---------------------------------------
+* CẤU TRÚC GÓI TIN
+
+ 0                   1                   2                   3
+ 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|Version|  IHL  |Type of Service|          Total Length         |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|         Identification        |Flags|      Fragment Offset    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|  Time to Live |    Protocol   |         Header Checksum       |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                       Source Address                          |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Destination Address                        |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+|                    Options                    |    Padding    |
++-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   
+Một gói tin IP bao gồm phần header và phần data. Gói tin IP không thực hiện checksum cho phần dữ liệu, mà chỉ thực hiện checksum cho header. Việc đảm bảo sự chính xác của phần dữ liệu có thể được thực hiện ở giao thức tầng cao. Ngoài ra, các giao thức tầng liên kết (link layer - tầng dưới của tầng mạng) thường sẽ bao gói tin IP cần gửi thành các frame với phần CRC kiểm lỗi. Các điều trên khiến cho việc kiểm lỗi phần dữ liệu trong IP là không cần thiết. Phiên bản mới nhất của IP, IPv6, bỏ phần checksum trong header với giả định rằng các phương thức kiểm lỗi của các tầng trên và dưới là đã đủ.
+
+Header TCP phải có độ dài là bội số của 32 bit, nếu không đủ, phần sau header đó sẽ được chèn vào các bit 0 để tạo đủ bội số (phần padding).
+
+-Version: 4 bit
+Trường dùng để chỉ phiền bản của IP, với IPv4 trường này luôn có giá trị 4.
+
+-IHL: 4 bit
+Internet Header Length (độ dài header Internet) là độ dài của của phần header tính theo số lượng word (32 bit). Tương tự với Data Offset trong TCP. Giá trị nhỏ nhất của trường là 5 (không có option), và dài nhất là 15 (option dài 10 word).
+
+-Type of Service: 8 bit
+Bỏ qua phần này. Chỉ đọc chứ không giải mã và thực hiện các chức năng.
+
+-Total Length: 16 bit
+Dùng để chỉ độ dài theo byte của toàn bộ gói tin (header + data). Độ dài gói tin tối đa là 65535 byte.
+
+-Identification: 16 bit
+Giá trị dùng để xác định các phần của một gói tin trong trường hợp phân mảnh xảy ra.
+
+-Flag: 3 bit
+Các bit kiểm soát trong việc phân mảnh. Các bit sau sẽ liệt kê theo thứ tự từ trái sang phải ứng với sơ đồ ở trên. 
+  Bit 0: Để dành (reserved) bởi chuẩn. Mang giá trị 0.
+  Bit 1: (DF - Don't Fragment) Chỉ  không được phân mảnh gói tin này. 1=true, 0=false
+  Bit 2: (MF - More Fragment) Chỉ ra các gói tin là phần nhỏ đã phân mảnh của một gói tin lớn, gói phân mảnh nhỏ  cuối cùng sẽ có bit này mang giá trị 0, các phân mảnh còn lại có giá trị 1.
+  
+-Fragment Offset: 13 bit
+Chỉ phần offset của một mảnh tin nhỏ so với bắt đầu của gói tin chưa phân mảnh, tính theo số lượng khối 8 byte. Mảnh tín đầu sẽ có offset 0.
+
+-Time to Live: 8 bit
+Thời gian (theo giây) tối đa mà một gói tin có thể tồn tại trong quá trình routing. Nếu mang giá trị 0, gói tin phải được hủy bỏ (không hiện thực chức năng này). Trường này sẽ được xử lý trong mỗi node mà gói tin đi qua. Mỗi node phải giảm giá trị này đi 1 kể cả khi thời gian xử lý ở mỗi node nhỏ hơn 1 giây. Mục đích của trường là tránh trường hơp gói tin sẽ bị route theo vòng tròn một cách vô tận.
+
+-Protocol: 8 bit
+Trường này chỉ giao thức tầng trên được dùng trong phần data. TCP là 17, UDP là 6.
+
+-Header Checksum: 16 bit 
+Giá trị checksum cho riêng phần header. Tính toán giống như header TCP và UDP (bù một của tổng bù một của các cụm 16 bit trong header).
+
+-Source Address: 32 bit
+Địa chỉ gốc (người gửi gói tin).
+
+-Destination Address: 32 bit 
+Địa chỉ nhận (người nhận gói tin).
+
+-Header: 0-320 bit
+Độ dài của trường này sẽ được xác định bằng giá trị trường IHL. Bỏ  qua không dọc phần option này.
+
+
+
+
+
+
+

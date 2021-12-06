@@ -1,5 +1,3 @@
-Cập nhật ngày 30/11
-
 User Datagram Protocol (UDP)
 ---------------------------------------
 * TỔNG QUAN
