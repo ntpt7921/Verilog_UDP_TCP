@@ -16,8 +16,6 @@ Tệp `Report` chứa các file phục vụ việc viết báo cáo tổng kết
 
 Với mỗi module được dùng, tồn tại một file hiện thực được đặt tên `<tên module>.v` và một file testbench được đặt tên `<tên module>_tb.v`.
 
-Các module lớn của các phần IP, TCP, UDP sẽ có state diagram đặt trong `Documentation`, với tên `<tên module>_sd.svg`.
-
 ## Chạy file Verilog
 
 Trình biên dịch và mô phỏng được chọn dùng là Icarus Verilog. Để chạy các file testbench trên Linux (ngầm định đã cài đặt `iverilog`):
