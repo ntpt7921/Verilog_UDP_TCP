@@ -16,7 +16,7 @@ module IP_decoder_tb ();
   wire [31:0] src_ip;
   wire [31:0] dest_ip;
   
-  wire [15:0] len_tcp;
+  wire [15:0] len_out;
   wire [31:0] data_out;
   wire wr_en;
   wire ok;
@@ -43,7 +43,7 @@ module IP_decoder_tb ();
     clk = 0;
     load_new_package_data("Hello World");
     change_ip_header_value(4'd4, 4'd5, 8'd0, package_data_length + 4*5,
-                           16'h1234, 3'b000, 12'h123, 8'h10, 17,
+                           16'h1234, 3'b000, 13'h123, 8'h10, 17,
                            16'hd601, 32'h9801_331b, 32'h980e_5e4b); 
     send_ip_data();
     #4;
@@ -123,7 +123,7 @@ module IP_decoder_tb ();
              $time, data, start, clk, reset,
                     version, IHL, type_of_ser, total_length, identification, flag,
                     frag_offset, time_to_live, protocol, src_ip, dest_ip,
-                    len_tcp, data_out, wr_en, ok, fin, dut.head_chks16);
+                    len_out, data_out, wr_en, ok, fin, dut.head_chks16);
    // $dumpvars(0, UDP_decoder_tb);
   end
   
@@ -133,7 +133,7 @@ module IP_decoder_tb ();
                   .total_length(total_length), .identification(identification), .flag(flag),
                   .frag_offset(frag_offset), .time_to_live(time_to_live), 
                   .protocol(protocol), .src_ip(src_ip), .dest_ip(dest_ip),
-                  .len_tcp(len_tcp), .data_out(data_out), 
+                  .len_out(len_out), .data_out(data_out), 
                   .wr_en(wr_en), .ok(ok), .fin(fin));
 
 endmodule

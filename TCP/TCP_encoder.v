@@ -3,8 +3,8 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
                     window, urg_ptr,
                     option_av, mss, scale_wnd, sack_nbr,
                     sack_n0, sack_n1, sack_n2, sack_n3, time_stp,
-                    data, len, clk, reset, start, data_av,
-                    pkg_data, checksum_out, wr_en, fin);
+                    data, len_in, clk, reset, start, data_av,
+                    pkg_data, checksum_out, len_out, wr_en, fin);
   input [15:0] src_port, dest_port;
   input [31:0] seq_num, ack_num;
   input f_urg, f_ack, f_psh, f_rst, f_syn, f_fin;
@@ -19,11 +19,12 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
     input [63:0] time_stp; // option 8
   
   input [31:0] data;
-  input [15:0] len;
+  input [15:0] len_in;
   input clk, reset, start, data_av;
 
   output [31:0] pkg_data;
   output [15:0] checksum_out;
+  output [15:0] len_out;
   output wr_en, fin;
   
   wire [15:0] src_port, dest_port;
@@ -32,7 +33,6 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
   wire [15:0] window;
   wire [15:0] urg_ptr;  
   
-  wire enable, clk, reset;
   wire [8:0] option_av;
     wire [15:0] mss; // option 2
     wire [7:0] scale_wnd; // option 3
@@ -41,11 +41,12 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
     wire [63:0] time_stp; // option 8
   
   wire [31:0] data;
-  wire [15:0] len;
-  //wire clk, reset, start, data_av;
+  wire [15:0] len_in;
+  wire clk, reset, start, data_av;
 
   reg [31:0] pkg_data;
   reg [15:0] checksum_out;
+  reg [15:0] len_out;
   reg wr_en, fin;
   
   
@@ -130,7 +131,7 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
       end
       WRITE_1: begin
         option_word_left <= (opt_word <= 10) ? opt_word : 10;
-        bytes_left <= len;
+        bytes_left <= len_in;
         data_offset <= data_offset_value;
       end
       WRITE_2: /* do nothing */;
@@ -155,6 +156,7 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
       IDLE: begin
         pkg_data <= 0;
         checksum_out <= 0;
+        len_out <= 0;
         wr_en <= 0;
         fin <= 0;
       end
@@ -190,10 +192,12 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
         wr_en <= 0;
         fin <= 1;
         checksum_out <= ~accum_checksum;
+        len_out <= len_in + 16'd20 + ((opt_word <= 10) ? opt_word : 10) * 4;
       end
       default: begin
         pkg_data <= 0;
         checksum_out <= 0;
+        len_out <= 0;
         wr_en <= 0;
         fin <= 0;
       end

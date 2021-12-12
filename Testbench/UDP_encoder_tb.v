@@ -1,11 +1,12 @@
 module UDP_encoder_tb ();
 
-	reg [15:0] src_port, dest_port, len;
+	reg [15:0] src_port, dest_port, len_in;
   reg [31:0] data;
   reg clk, reset, no_chksum, start, data_av;
 
   wire [31:0] pkg_data;
   wire [15:0] checksum_out;
+  wire [15:0] len_out;
   wire wr_en, fin;
 
   reg [8*package_data_length-1:0] package_data;
@@ -26,7 +27,7 @@ module UDP_encoder_tb ();
     input [15:0] src_port_value, dest_port_value, len_value;
     src_port = src_port_value;
     dest_port = dest_port_value;
-    len = len_value;
+    len_in = len_value;
   endtask
   
   
@@ -60,20 +61,21 @@ module UDP_encoder_tb ();
 
   always
     #1 clk = ~clk;
-  
+    
   initial begin
-    $display("  T\tsrc_p\tdest_p\tlen\tdata\t\tclk\treset\tno_cs\tstart\tdata_av\tpkg_data\tcs_out\twr_en\tfin\tbleft\ttemp2\tacc_chks");
-    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
-             $time, src_port, dest_port, len, 
+    $display("  T\tsrc_p\tdest_p\tlen_in\tdata\t\tclk\treset\tno_cs\tstart\tdata_av\tpkg_data\tcs_out\twr_en\tfin\tlen_out\tbleft");
+    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
+             $time, src_port, dest_port, len_in, 
              data, clk, reset, no_chksum, start, data_av,
-             pkg_data, checksum_out, wr_en, fin, 
-             dut.bytes_left, dut.temp2, dut.accum_checksum);
+             pkg_data, checksum_out, wr_en, fin, len_out,
+             dut.bytes_left);
     // $dumpvars(0, UDP_decoder_tb);
   end
   
-  UDP_encoder dut (.src_port(src_port), .dest_port(dest_port), .len(len), .data(data), 
-               .clk(clk), .reset(reset), .no_chksum(no_chksum), .start(start), .data_av(data_av),
-               .pkg_data(pkg_data), .wr_en(wr_en), .fin(fin), .checksum_out(checksum_out));
+  UDP_encoder dut (.src_port(src_port), .dest_port(dest_port), .len_in(len_in), 
+                   .data(data), .clk(clk), .reset(reset), .no_chksum(no_chksum), 
+                   .start(start), .data_av(data_av), .pkg_data(pkg_data), .wr_en(wr_en), 
+                   .fin(fin), .checksum_out(checksum_out), .len_out(len_out));
 
 
 endmodule

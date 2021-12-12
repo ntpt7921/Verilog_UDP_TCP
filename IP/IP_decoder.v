@@ -1,7 +1,7 @@
 module IP_decoder (data, start, clk, reset,
                    version, IHL, type_of_ser, total_length, identification, flag,
                    frag_offset, time_to_live, protocol, src_ip, dest_ip,
-                   len_tcp, data_out, wr_en, ok, fin);
+                   len_out, data_out, wr_en, ok, fin);
   input [31:0] data;
   input start;
   input clk;
@@ -19,7 +19,7 @@ module IP_decoder (data, start, clk, reset,
   output [31:0] src_ip;
   output [31:0] dest_ip;
   
-  output [15:0] len_tcp;
+  output [15:0] len_out;
   output [31:0] data_out;
   output wr_en;
   output ok;
@@ -43,7 +43,7 @@ module IP_decoder (data, start, clk, reset,
   reg [31:0] src_ip;
   reg [31:0] dest_ip;
   
-  reg [15:0] len_tcp;
+  reg [15:0] len_out;
   reg [31:0] data_out;
   reg wr_en;
   wire ok;
@@ -141,7 +141,7 @@ module IP_decoder (data, start, clk, reset,
         protocol <= 8'hFF;
         src_ip <= 0;
         dest_ip <= 0;
-        len_tcp <= 0;
+        len_out <= 0;
         wr_en <= 0;
         fin <= 0;
         data_out <= 0;
@@ -151,6 +151,7 @@ module IP_decoder (data, start, clk, reset,
         IHL <= data[27:24];
         type_of_ser <= data[23:16];
         total_length <= data[15:0];
+        len_out <= data[15:0] - 4 * data[27:24];
       end
       READ_2: begin
         identification <= data[31:16];
@@ -175,7 +176,6 @@ module IP_decoder (data, start, clk, reset,
         wr_en <= 1;
       end
       FIN: begin
-        len_tcp <= total_length - 4 * IHL;
         data_out <= 0;
         wr_en <= 0;
         fin <= 1;
@@ -192,7 +192,7 @@ module IP_decoder (data, start, clk, reset,
         protocol <= 8'hFF;
         src_ip <= 0;
         dest_ip <= 0;
-        len_tcp <= 0;
+        len_out <= 0;
         wr_en <= 0;
         fin <= 0;
         data_out <= 0;

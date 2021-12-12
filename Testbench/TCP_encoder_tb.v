@@ -13,11 +13,12 @@ module TCP_encoder_tb ();
     reg [63:0] time_stp; // option 8
   
   reg [31:0] data;
-  reg [15:0] len;
+  reg [15:0] len_in;
   reg clk, reset, start, data_av;
 
   wire [31:0] pkg_data;
   wire [15:0] checksum_out;
+  wire [15:0] len_out;
   wire wr_en, fin;
   
   
@@ -31,7 +32,7 @@ module TCP_encoder_tb ();
     change_tcp_option_info(9'b0_0010_0001, 16'h1234, 2, 
                            1, 64'h1111_1111_1111_1111, 0, 0, 0,
                            64'h1234_1234_1234_1234);
-    len = package_data_length;
+    len_in = package_data_length;
     load_new_package_data("Hello World");
     send_tcp_data();
     //@(posedge fin);
@@ -105,12 +106,12 @@ module TCP_encoder_tb ();
   wire [5:0] flag;
   assign flag = {f_urg, f_ack, f_psh, f_rst, f_syn, f_fin};
   initial begin
-    $display("  T\tsport\tdport\tsn\t\tan\t\tflag\twnd\turg_ptr\tdata\t\tlen\tclk\trst\tstr\td_av\tpkg_d\t\tchks\twr_en\tfin");
+    $display("  T\tsport\tdport\tsn\t\tan\t\tflag\twnd\turg_ptr\tdata\t\tlen\tclk\trst\tstr\td_av\tpkg_d\t\tchks\twr_en\tfin\tl_out");
     $monitor("%3d\t%h\t%h\t%h\t%h\t%b\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%d", 
              $time, src_port, dest_port, seq_num, ack_num, 
                     flag, window, urg_ptr,
-                    data, len, clk, reset, start, data_av,
-                    pkg_data, checksum_out, wr_en, fin, dut.opt_word);
+                    data, len_in, clk, reset, start, data_av,
+                    pkg_data, checksum_out, wr_en, fin, len_out);
    // $dumpvars(0, UDP_decoder_tb);
   end
   
@@ -121,8 +122,8 @@ module TCP_encoder_tb ();
                    .window(window), .urg_ptr(urg_ptr),
                    .option_av(option_av), .mss(mss), .scale_wnd(scale_wnd), .sack_nbr(sack_nbr),
                    .sack_n0(sack_n0), .sack_n1(sack_n1), .sack_n2(sack_n2), .sack_n3(sack_n3), 
-                   .time_stp(time_stp), .data(data), .len(len), .clk(clk), .reset(reset), 
+                   .time_stp(time_stp), .data(data), .len_in(len_in), .clk(clk), .reset(reset), 
                    .start(start), .data_av(data_av), .pkg_data(pkg_data), 
-                   .checksum_out(checksum_out), .wr_en(wr_en), .fin(fin));
+                   .checksum_out(checksum_out), .len_out(len_out), .wr_en(wr_en), .fin(fin));
   
 endmodule

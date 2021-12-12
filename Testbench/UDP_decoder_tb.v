@@ -69,8 +69,8 @@ module UDP_decoder_tb ();
     #1 clk = ~clk;
   
   initial begin
-    $display("  T\tsip\t\tdip\t\tludp\tdata\t\tstart\tclk\treset\tsport\tdport\tlen_data\tdata_udp\twr_en\tok\tfin\tudp.bytes_left");
-    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t\t%h", 
+    $display("  T\tsip\t\tdip\t\tludp\tdata\t\tstart\tclk\treset\tsport\tdport\tlen_data\tdata_udp\twr_en\tok\tfin\tudp.bytes_left\tcs");
+    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t\t%h\t%h\t%h\t%h\t%h\t\t%h", 
              $time, src_ip, dest_ip, len_udp, data, start, clk, reset,
              src_port, dest_port, len_data, data_udp, wr_en, ok, fin, 
              dut.bytes_left, dut.complete_checksum);

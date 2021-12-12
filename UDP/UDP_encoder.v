@@ -1,22 +1,25 @@
-module UDP_encoder (src_port, dest_port, len, data,
+module UDP_encoder (src_port, dest_port, len_in, data,
                     clk, reset, no_chksum, start, data_av,
-                    pkg_data, wr_en, fin, checksum_out);
+                    pkg_data, wr_en, fin, checksum_out, len_out);
 
-  input [15:0] src_port, dest_port, len;
+  input [15:0] src_port, dest_port, len_in;
   input [31:0] data;
   input clk, reset, no_chksum, start, data_av;
 
   output [31:0] pkg_data;
   output [15:0] checksum_out;
+  output [15:0] len_out;
   output wr_en, fin;
 
 
-  wire [15:0] src_port, dest_port, len;
+  wire [15:0] src_port, dest_port, len_in;
   wire [31:0] data;
   wire clk, reset, no_chksum, start, data_av;
 
   reg [31:0] pkg_data;
   reg [15:0] checksum_out;
+  wire [15:0] len_out;
+  assign len_out = len_in + 16'd8;
   reg wr_en, fin;
 
   parameter IDLE = 0;
@@ -36,7 +39,7 @@ module UDP_encoder (src_port, dest_port, len, data,
   wire [15:0] accum_checksum, temp1, temp2, temp3;
   wire [31:0] data_checksum;
   one_complement_adder #(.LENGTH(16)) add1 (.a1(src_port), .a2(dest_port), .res(temp1));
-  one_complement_adder #(.LENGTH(16)) add2 (.a1(temp1), .a2(len + 16'd8), .res(temp2));
+  one_complement_adder #(.LENGTH(16)) add2 (.a1(temp1), .a2(len_out), .res(temp2));
   
   wire enable_checksum;
   assign enable_checksum = (next_state == WRITE_DATA) && data_av_dl;
@@ -73,7 +76,7 @@ module UDP_encoder (src_port, dest_port, len, data,
     state <= next_state;
     case (next_state)
       IDLE: bytes_left <= 0;
-      WRITE_1: bytes_left <= len;
+      WRITE_1: bytes_left <= len_in;
       WRITE_2: /* do nohting */;
       WRITE_DATA: 
         if (data_av_dl) 
@@ -95,7 +98,7 @@ module UDP_encoder (src_port, dest_port, len, data,
         wr_en <= 1;
       end
       WRITE_2: begin
-        pkg_data <= {len + 16'd8, 16'h0000};
+        pkg_data <= {len_out, 16'h0000};
       end
       WRITE_DATA: begin
         if (data_av_dl) begin
