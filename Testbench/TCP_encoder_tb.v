@@ -1,4 +1,5 @@
 module TCP_encoder_tb ();
+  reg [31:0] src_ip, dest_ip;
   reg [15:0] src_port, dest_port;
   reg [31:0] seq_num, ack_num;
   reg f_urg, f_ack, f_psh, f_rst, f_syn, f_fin;
@@ -28,6 +29,8 @@ module TCP_encoder_tb ();
   
   initial begin
     clk = 0;
+    src_ip = 0;
+    dest_ip = 0;
     change_tcp_header_info('ha08f, 'h2694, 1, 2, 6'b11_1111, 3, 4);
     change_tcp_option_info(9'b0_0010_0001, 16'h1234, 2, 
                            1, 64'h1111_1111_1111_1111, 0, 0, 0,
@@ -106,16 +109,18 @@ module TCP_encoder_tb ();
   wire [5:0] flag;
   assign flag = {f_urg, f_ack, f_psh, f_rst, f_syn, f_fin};
   initial begin
-    $display("  T\tsport\tdport\tsn\t\tan\t\tflag\twnd\turg_ptr\tdata\t\tlen\tclk\trst\tstr\td_av\tpkg_d\t\tchks\twr_en\tfin\tl_out");
-    $monitor("%3d\t%h\t%h\t%h\t%h\t%b\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%d", 
-             $time, src_port, dest_port, seq_num, ack_num, 
+    $display("  T\tsip\t\tdip\t\tsport\tdport\tsn\t\tan\t\tflag\twnd\turg_ptr\tdata\t\tlen\tclk\trst\tstr\td_av\tpkg_d\t\tchks\twr_en\tfin\tl_out");
+    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%b\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
+             $time, src_ip, dest_ip,
+                    src_port, dest_port, seq_num, ack_num, 
                     flag, window, urg_ptr,
                     data, len_in, clk, reset, start, data_av,
                     pkg_data, checksum_out, wr_en, fin, len_out);
    // $dumpvars(0, UDP_decoder_tb);
   end
   
-  TCP_encoder dut (.src_port(src_port), .dest_port(dest_port), 
+  TCP_encoder dut (.src_ip(src_ip), .dest_ip(dest_ip),
+                   .src_port(src_port), .dest_port(dest_port), 
                    .seq_num(seq_num), .ack_num(ack_num), 
                    .f_urg(f_urg), .f_ack(f_ack), .f_psh(f_psh), 
                    .f_rst(f_rst), .f_syn(f_syn), .f_fin(f_fin),

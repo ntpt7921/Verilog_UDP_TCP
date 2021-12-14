@@ -66,7 +66,7 @@ Chỉ phần offset của một mảnh tin nhỏ so với bắt đầu của gó
 Thời gian (theo giây) tối đa mà một gói tin có thể tồn tại trong quá trình routing. Nếu mang giá trị 0, gói tin phải được hủy bỏ (không hiện thực chức năng này). Trường này sẽ được xử lý trong mỗi node mà gói tin đi qua. Mỗi node phải giảm giá trị này đi 1 kể cả khi thời gian xử lý ở mỗi node nhỏ hơn 1 giây. Mục đích của trường là tránh trường hơp gói tin sẽ bị route theo vòng tròn một cách vô tận.
 
 -Protocol: 8 bit
-Trường này chỉ giao thức tầng trên được dùng trong phần data. TCP là 17, UDP là 6.
+Trường này chỉ giao thức tầng trên được dùng trong phần data. TCP là 6, UDP là 17.
 
 -Header Checksum: 16 bit 
 Giá trị checksum cho riêng phần header. Tính toán giống như header TCP và UDP (bù một của tổng bù một của các cụm 16 bit trong header).

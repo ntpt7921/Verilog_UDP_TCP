@@ -1,7 +1,9 @@
-module UDP_encoder (src_port, dest_port, len_in, data,
+module UDP_encoder (src_ip, dest_ip,
+                    src_port, dest_port, len_in, data,
                     clk, reset, no_chksum, start, data_av,
                     pkg_data, wr_en, fin, checksum_out, len_out);
 
+  input [31:0] src_ip, dest_ip;
   input [15:0] src_port, dest_port, len_in;
   input [31:0] data;
   input clk, reset, no_chksum, start, data_av;
@@ -34,22 +36,33 @@ module UDP_encoder (src_port, dest_port, len_in, data,
   delay_reg #(.WIDTH(33), .DEPTH(2)) delay
   (.data_in({data_av, data}), .in_pos(8'd2), .data_out({data_av_dl, data_dl}), 
    .clk(clk), .reset(reset));
+   
+   
+  wire [31:0] temp0;
+  wire [15:0] temp1, temp2, ps_hdr_chks;
+  one_complement_adder #(.LENGTH(32)) add0 (.a1(src_ip), .a2(dest_ip), .res(temp0));
+  one_complement_adder #(.LENGTH(16)) add1 (.a1({8'b0, 8'd17}), .a2(len_out), .res(temp1));
+  one_complement_adder #(.LENGTH(16)) add2 (.a1(temp0[31:16]), .a2(temp0[15:0]), .res(temp2));
+  one_complement_adder #(.LENGTH(16)) add3 (.a1(temp1), .a2(temp2), .res(ps_hdr_chks));
   
+  wire [15:0] temp3, hdr_chks;
+  one_complement_adder #(.LENGTH(16)) add4 (.a1(src_port), .a2(dest_port), .res(temp3));
+  one_complement_adder #(.LENGTH(16)) add5 (.a1(temp3), .a2(len_out), .res(hdr_chks));
   
-  wire [15:0] accum_checksum, temp1, temp2, temp3;
   wire [31:0] data_checksum;
-  one_complement_adder #(.LENGTH(16)) add1 (.a1(src_port), .a2(dest_port), .res(temp1));
-  one_complement_adder #(.LENGTH(16)) add2 (.a1(temp1), .a2(len_out), .res(temp2));
-  
   wire enable_checksum;
   assign enable_checksum = (next_state == WRITE_DATA) && data_av_dl;
-  checksum_calculator #(.LENGTH(32)) add3
+  checksum_calculator #(.LENGTH(32)) add6
   (.in(data_dl), .reset(reset), .enable(enable_checksum), 
    .clk(clk), .checksum(data_checksum));
   
-  one_complement_adder #(.LENGTH(16)) add4 
-  (.a1(data_checksum[31:16]), .a2(data_checksum[15:0]), .res(temp3));
-  one_complement_adder #(.LENGTH(16)) add5 (.a1(temp3), .a2(temp2), .res(accum_checksum));
+  wire [15:0] accum_checksum, temp4, temp5;
+  one_complement_adder #(.LENGTH(16)) add7 
+  (.a1(data_checksum[31:16]), .a2(data_checksum[15:0]), .res(temp4));
+  one_complement_adder #(.LENGTH(16)) add8 
+  (.a1(ps_hdr_chks), .a2(hdr_chks), .res(temp5));
+  one_complement_adder #(.LENGTH(16)) add9
+  (.a1(temp4), .a2(temp5), .res(accum_checksum));
   
   
   reg [2:0] state, next_state;

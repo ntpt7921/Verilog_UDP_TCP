@@ -1,10 +1,12 @@
-module TCP_encoder (src_port, dest_port, seq_num, ack_num, 
+module TCP_encoder (src_ip, dest_ip,
+                    src_port, dest_port, seq_num, ack_num, 
                     f_urg, f_ack, f_psh, f_rst, f_syn, f_fin,
                     window, urg_ptr,
                     option_av, mss, scale_wnd, sack_nbr,
                     sack_n0, sack_n1, sack_n2, sack_n3, time_stp,
                     data, len_in, clk, reset, start, data_av,
                     pkg_data, checksum_out, len_out, wr_en, fin);
+  input [31:0] src_ip, dest_ip;
   input [15:0] src_port, dest_port;
   input [31:0] seq_num, ack_num;
   input f_urg, f_ack, f_psh, f_rst, f_syn, f_fin;
@@ -46,7 +48,8 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
 
   reg [31:0] pkg_data;
   reg [15:0] checksum_out;
-  reg [15:0] len_out;
+  wire [15:0] len_out;
+  assign len_out = len_in + 16'd20 + ((opt_word <= 10) ? opt_word : 10) * 4;
   reg wr_en, fin;
   
   
@@ -156,7 +159,6 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
       IDLE: begin
         pkg_data <= 0;
         checksum_out <= 0;
-        len_out <= 0;
         wr_en <= 0;
         fin <= 0;
       end
@@ -192,21 +194,27 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
         wr_en <= 0;
         fin <= 1;
         checksum_out <= ~accum_checksum;
-        len_out <= len_in + 16'd20 + ((opt_word <= 10) ? opt_word : 10) * 4;
       end
       default: begin
         pkg_data <= 0;
         checksum_out <= 0;
-        len_out <= 0;
         wr_en <= 0;
         fin <= 0;
       end
     endcase
   end
   
-  wire [31:0] temp1, temp2, temp3, temp4;
+  wire [31:0] temp1, temp2, temp3, temp4, temp9, temp10;
   wire [31:0] data_checksum, opt_checksum;
-  wire [15:0] accum_checksum, temp5, temp6, temp7, temp8;
+  wire [15:0] accum_checksum, hdr_chks, ps_hdr_chks, temp6, temp7, temp8, temp11;
+  
+  one_complement_adder #(.LENGTH(32)) add12
+  (.a1(src_ip), .a2(dest_ip), .res(temp9));
+  one_complement_adder #(.LENGTH(32)) add13
+  (.a1(temp9), .a2({8'b0, 8'd6, len_out}), .res(temp10));
+  one_complement_adder #(.LENGTH(16)) add14
+  (.a1(temp10[31:16]), .a2(temp10[15:0]), .res(ps_hdr_chks));
+  
   one_complement_adder #(.LENGTH(32)) add1 
   (.a1({src_port, dest_port}), .a2(seq_num), .res(temp1));
   one_complement_adder #(.LENGTH(32)) add2 
@@ -216,7 +224,7 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
   one_complement_adder #(.LENGTH(32)) add4 
   (.a1(temp3), .a2({16'd0, urg_ptr}), .res(temp4));
   one_complement_adder #(.LENGTH(16)) add5 
-  (.a1(temp4[31:16]), .a2(temp4[15:0]), .res(temp5));
+  (.a1(temp4[31:16]), .a2(temp4[15:0]), .res(hdr_chks));
   
   wire enable_checksum_data;
   assign enable_checksum_data = (next_state == WRITE_DATA) && data_av_dl;
@@ -235,8 +243,10 @@ module TCP_encoder (src_port, dest_port, seq_num, ack_num,
   one_complement_adder #(.LENGTH(16)) add9
   (.a1(opt_checksum[31:16]), .a2(opt_checksum[15:0]), .res(temp7));
   one_complement_adder #(.LENGTH(16)) add10
-  (.a1(temp5), .a2(temp6), .res(temp8));
+  (.a1(temp6), .a2(temp7), .res(temp8));
   one_complement_adder #(.LENGTH(16)) add11
-  (.a1(temp7), .a2(temp8), .res(accum_checksum));
+  (.a1(ps_hdr_chks), .a2(hdr_chks), .res(temp11));
+  one_complement_adder #(.LENGTH(16)) add15
+  (.a1(temp8), .a2(temp11), .res(accum_checksum));
   
 endmodule

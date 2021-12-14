@@ -13,9 +13,11 @@ module buffer_memory (addr_wr, addr_rd, data_in, rd_en, wr_en, clk, reset, data_
   
   integer i;
   always @(posedge clk) begin
-    if (reset)
+    if (reset) begin
       for (i = 0; i < 16383; i = i + 1)
         mem[i] <= 0;
+      data_out <= 0;
+    end
     else begin
       if (rd_en)
         data_out <= mem[addr_rd];

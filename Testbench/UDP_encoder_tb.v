@@ -1,5 +1,6 @@
 module UDP_encoder_tb ();
 
+  reg [31:0] src_ip, dest_ip; 
 	reg [15:0] src_port, dest_port, len_in;
   reg [31:0] data;
   reg clk, reset, no_chksum, start, data_av;
@@ -15,7 +16,7 @@ module UDP_encoder_tb ();
   initial begin
     clk = 0;
     no_chksum = 0;
-    change_starting_info('ha08f, 'h2694, package_data_length);
+    change_starting_info(1, 2, 'ha08f, 'h2694, package_data_length);
     load_new_package_data("Hello World");
     send_udp_data();
     #6;
@@ -24,7 +25,10 @@ module UDP_encoder_tb ();
 
 
   task change_starting_info;
+    input [31:0] src_ip_value, dest_ip_value;
     input [15:0] src_port_value, dest_port_value, len_value;
+    src_ip = src_ip_value;
+    dest_ip = dest_ip_value; 
     src_port = src_port_value;
     dest_port = dest_port_value;
     len_in = len_value;
@@ -63,16 +67,16 @@ module UDP_encoder_tb ();
     #1 clk = ~clk;
     
   initial begin
-    $display("  T\tsrc_p\tdest_p\tlen_in\tdata\t\tclk\treset\tno_cs\tstart\tdata_av\tpkg_data\tcs_out\twr_en\tfin\tlen_out\tbleft");
-    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
-             $time, src_port, dest_port, len_in, 
+    $display("  T\tsrc_ip \t\tdest_ip\t\tsrc_p\tdest_p\tlen_in\tdata\t\tclk\treset\tno_cs\tstart\tdata_av\tpkg_data\tcs_out\twr_en\tfin\tlen_out");
+    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
+             $time, src_ip, dest_ip, src_port, dest_port, len_in, 
              data, clk, reset, no_chksum, start, data_av,
-             pkg_data, checksum_out, wr_en, fin, len_out,
-             dut.bytes_left);
+             pkg_data, checksum_out, wr_en, fin, len_out);
     // $dumpvars(0, UDP_decoder_tb);
   end
   
-  UDP_encoder dut (.src_port(src_port), .dest_port(dest_port), .len_in(len_in), 
+  UDP_encoder dut (.src_ip(src_ip), .dest_ip(dest_ip),
+                   .src_port(src_port), .dest_port(dest_port), .len_in(len_in), 
                    .data(data), .clk(clk), .reset(reset), .no_chksum(no_chksum), 
                    .start(start), .data_av(data_av), .pkg_data(pkg_data), .wr_en(wr_en), 
                    .fin(fin), .checksum_out(checksum_out), .len_out(len_out));
