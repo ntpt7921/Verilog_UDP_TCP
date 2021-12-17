@@ -42,7 +42,7 @@ trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư vi
   - [x] Encoder
 - IP
   - [x] Decoder
-  - [ ] Encoder
+  - [x] Encoder
 - Combine
   - [ ] Decoder
   - [ ] Encoder
