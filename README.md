@@ -48,4 +48,3 @@ trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư vi
 - Combine
   - [x] Decoder
   - [x] Encoder
-- [ ] Report
