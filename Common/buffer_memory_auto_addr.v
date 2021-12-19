@@ -13,6 +13,7 @@ module buffer_memory_auto_addr (data_in, rd_en, wr_en, clk, reset, data_out, dat
   buffer_memory mem (.addr_wr(count_in), .addr_rd(count_out), .data_in(data_in), 
                      .rd_en(rd_en), .wr_en(wr_en), .clk(clk), .reset(reset), .data_out(data_out));
   
+  wire data_remain;
   assign data_remain = count_in > count_out;
 
   always @(posedge clk) begin

@@ -4,7 +4,7 @@
 
 Đây là phần bài làm cho chủ đề "Hiện thực giải mã/đóng gói gói tin" của Đồ án thiết kế luận lí học kì II/2021 ĐHBK-HCM.
 
-Nội dung được hiện thực là gói tin của các giao thức [IPv4](https://en.wikipedia.org/wiki/IPv4), [TCPv4](https://en.wikipedia.org/wiki/Transmission_Control_Protocol) và [UDPv4](https://en.wikipedia.org/wiki/User_Datagram_Protocol) ('v4' ở đây có nghĩa là dựa theo IPv4). Mỗi gói tin sẽ được hiện thực ở hai module khác nhau, decoder - giải mã gói tin, và encoder - đóng gói gói tin. Các module được thiết kế để giảm thiểu sự phụ thuộc vào nhau ít nhất có thể, và riêng với các module decoder có thể kiểm thử một cách độc lập nếu cung cấp đủ các input.
+Nội dung được hiện thực là gói tin của các giao thức [IPv4](https://en.wikipedia.org/wiki/IPv4), [TCPv4](https://en.wikipedia.org/wiki/Transmission_Control_Protocol) và [UDPv4](https://en.wikipedia.org/wiki/User_Datagram_Protocol) ('v4' ở đây có nghĩa là dựa theo IPv4). Mỗi gói tin sẽ được hiện thực ở hai module khác nhau, decoder - giải mã gói tin, và encoder - đóng gói gói tin. Các module được thiết kế để có thể thực hiện được riêng chức năng của mình, giảm thiểu sự phụ thuộc vào nhau. Các module có thể được kiểm thử một cách độc lập nếu cung cấp đủ các input.
 
 ## Sắp xếp và đặt tên file
 
@@ -20,12 +20,12 @@ Về phần Combine, đây là phần nối tổng hợp lại cái module IP, T
 
 ## Chạy file Verilog
 
-Trình biên dịch và mô phỏng được chọn dùng là Icarus Verilog. Để chạy các file testbench trên Linux (ngầm định đã cài đặt `iverilog`):
+Trình biên dịch và mô phỏng được chọn dùng là Icarus Verilog. Để chạy các file testbench trên Linux (ngầm định đã cài đặt `iverilog` và đang đứng tại thư mục gốc của dự án):
 ```
-iverilog -y ./Common -y ./UDP -y ./TCP -y ./IP -g2012 <tên testbench>.v
+iverilog -y ./Common -y ./UDP -y ./TCP -y ./IP -y ./Combine -g2012 ./Testbench/<tên testbench>.v
 vvp a.out
 ```
-trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư viện và trình biên dịch sẽ dùng để tìm module bị thiếu, `-g2012` dùng để báo rằng chuẩn được dùng sẽ là SystemVerilog (IEEE 1800-2012) - phần mở rộng thêm chỉ dùng để viết testbench. `iverilog` sẽ xuất ra một file (trường hợp này là `a.out`). Để chạy file này ta dùng `vvp`.
+trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư viện và trình biên dịch sẽ dùng để tìm module được sử dụng, `-g2012` dùng để báo rằng chuẩn được dùng sẽ là SystemVerilog (IEEE 1800-2012) - phần mở rộng thêm này chỉ dùng để viết testbench. Lệnh `iverilog` sẽ xuất ra một file (trường hợp này là `a.out`). Để chạy file này ta dùng `vvp`.
 
 ## Tiến độ
 
@@ -33,7 +33,9 @@ trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư vi
   - [x] UDP
   - [x] TCP
   - [x] IP
+  - [ ] Sơ đồ khối các khối tin lớn
   - [ ] Sơ đồ khối kiến trúc hệ thông
+  - [ ] State diagram
 - UDP
   - [x] Decoder
   - [x] Encoder 
@@ -44,5 +46,6 @@ trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư vi
   - [x] Decoder
   - [x] Encoder
 - Combine
-  - [ ] Decoder
-  - [ ] Encoder
+  - [x] Decoder
+  - [x] Encoder
+- [ ] Report
