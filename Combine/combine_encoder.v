@@ -100,19 +100,10 @@ module combine_encoder (data, udp0_tcp1, clk, reset, start, data_av,
   wire wr_en;
   wire fin;
   wire [31:0] pkg_data;
-  // Data type declaration - start
-  
-  assign protocol = (udp0_tcp1 == 0) ? 17 :
-                    (udp0_tcp1 == 1) ? 6 : 0;
+  // Data type declaration - end
   assign wr_en = wr_en_ip; // may change later
   assign fin = fin_ip; // may change later
   assign pkg_data = pkg_data_ip; // may change later
-  
-  
-  // Start signal for for UDP and TCP module
-  wire start_tcp, start_udp;
-  assign start_udp = (udp0_tcp1 == 0) && start;
-  assign start_tcp = (udp0_tcp1 == 1) && start;
   
   
   
@@ -155,7 +146,17 @@ module combine_encoder (data, udp0_tcp1, clk, reset, start, data_av,
                                         .data_out(data_out_tcp), .data_av(data_av_tcp));
   
   
-  // Logic & Multiplex part - start
+  // Logic & Multiplex & Control State Machine part - start
+  
+  // Determine the protocol munber
+  assign protocol = (udp0_tcp1 == 0) ? 17 :
+                    (udp0_tcp1 == 1) ? 6 : 0;
+  // Start signal for for UDP and TCP module
+  wire start_tcp, start_udp;
+  assign start_udp = (udp0_tcp1 == 0) && start;
+  assign start_tcp = (udp0_tcp1 == 1) && start;
+  
+  // Multiplexer output, set below
   reg [31:0] mux_data;
   reg [15:0] mux_chks, mux_len;
   reg mux_data_av;
@@ -201,7 +202,7 @@ module combine_encoder (data, udp0_tcp1, clk, reset, start, data_av,
     endcase
   end
   
-  // Logic & Multiplex part - end
+  // Logic & Multiplex & Control State Machine part - end
   
   
   // IP encoder

@@ -8,15 +8,13 @@ Nội dung được hiện thực là gói tin của các giao thức [IPv4](htt
 
 ## Sắp xếp và đặt tên file
 
-Mã Verilog cho các module và testbench tương ứng của chúng được chứa trong các tệp `Combine`, `IP`, `UDP`, `TCP`, `Common` và `Testbench`. Các tệp `Combine`, `IP`, `UDP`, `TCP` sẽ chứa riêng các module lớn của từng phần. Tệp `Common` dùng để chứa các module nhỏ dùng chung cho toàn dự án. Tệp `Testbench` chứa các file testbench cho từng module được viết.
+Mã Verilog cho các module và testbench tương ứng của chúng được chứa trong các tệp `Combine`, `IP`, `UDP`, `TCP`, `Common` và `Testbench`. Các tệp `Combine`, `IP`, `UDP`, `TCP` sẽ chứa riêng các module lớn của từng phần. Tệp `Common` dùng để chứa các module nhỏ dùng chung cho toàn dự án. Tệp `Testbench` chứa các file testbench cho từng module được viết. Với mỗi module được dùng, tồn tại một file hiện thực được đặt tên `<tên module>.v` và một file testbench được đặt tên `<tên module>_tb.v`.
 
-Tệp `Documetation` chứa các tài liệu và ghi chú phục vụ cho việc hiện thực. Nó chứa ghi chú chi tiết cho giao thức UDP, TCP và IP, sơ đồ khối của toàn hệ thống (chưa có, cần bổ sung), sơ đồ khối từng gói tin lớn (chưa có, cần bổ sung) và các tài liệu liên quan. Các module lớn của các phần IP, TCP, UDP sẽ có state diagram đặt trong `Documentation`, với tên `<tên module>_sd.svg`.
+Về phần `Combine`, đây là phần nối tổng hợp lại cái module IP, TCP và UDP đã viết để tạo thành bộ phận giải mã và đóng gói gói tin hoàn chỉnh. Phần này có thể được thực hiện sau khi đã viết xong các bộ phận cần thiết.
+
+Tệp `Documetation` chứa các tài liệu và ghi chú phục vụ cho việc hiện thực. Nó chứa ghi chú chi tiết cho giao thức UDP, TCP và IP, sơ đồ khối của toàn hệ thống (tức sơ đồ khối của các module phần combine), sơ đồ khối và state diagram từng gói tin lớn (các module UDP, TCP và IP) và các tài liệu liên quan. Các module lớn của các phần IP, TCP, UDP sẽ có state diagram với tên `<tên module>_sd.svg`. Đồng thời các module trên cũng sẽ có sơ đồ khối với tên `<tên module>_bd.svg`.
 
 Tệp `Report` chứa các file phục vụ việc viết báo cáo tổng kết (hiện chưa bắt đầu).
-
-Với mỗi module được dùng, tồn tại một file hiện thực được đặt tên `<tên module>.v` và một file testbench được đặt tên `<tên module>_tb.v`.
-
-Về phần Combine, đây là phần nối tổng hợp lại cái module IP, TCP và UDP đã viết để tạo thành bộ phận giải mã và đóng gói gói tin hoàn chỉnh. Phần này sẽ được thực hiện sau khi đã viết xong các bộ phận cần thiết.
 
 ## Chạy file Verilog
 
@@ -34,8 +32,8 @@ trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư vi
   - [x] TCP
   - [x] IP
   - [ ] Sơ đồ khối các khối tin lớn
-  - [ ] Sơ đồ khối kiến trúc hệ thông
-  - [ ] State diagram
+  - [x] Sơ đồ khối kiến trúc hệ thông
+  - [x] State diagram
 - UDP
   - [x] Decoder
   - [x] Encoder 
