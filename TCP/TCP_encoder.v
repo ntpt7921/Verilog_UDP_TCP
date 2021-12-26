@@ -53,7 +53,7 @@ module TCP_encoder (src_ip, dest_ip,
   reg wr_en, fin;
   
   
-  reg enable_opt_dc; // is set to true 2 clock cycle before entering state OPTION
+  reg enable_opt_ec; // is set to true 2 clock cycle before entering state OPTION
   reg [4:0] opt_word;
   always @(option_av) begin
     opt_word = 0;
@@ -68,7 +68,7 @@ module TCP_encoder (src_ip, dest_ip,
     if (option_av[0]) opt_word = opt_word + 1;
   end
   wire [31:0] data_option;
-  TCP_option_encoder opt_dc (.enable(enable_opt_dc), .clk(clk), .reset(reset), 
+  TCP_option_encoder opt_dc (.enable(enable_opt_ec), .clk(clk), .reset(reset), 
                              .option_av(option_av), .mss(mss), .scale_wnd(scale_wnd),
                              .sack_nbr(sack_nbr), .sack_n0(sack_n0), .sack_n1(sack_n1), 
                              .sack_n2(sack_n2), .sack_n3(sack_n3), .time_stp(time_stp), 
@@ -130,7 +130,7 @@ module TCP_encoder (src_ip, dest_ip,
         bytes_left <= 0;
         data_offset <= 0;
         option_word_left <= 0;
-        enable_opt_dc <= 0;
+        enable_opt_ec <= 0;
       end
       WRITE_1: begin
         option_word_left <= (opt_word <= 10) ? opt_word : 10;
@@ -139,7 +139,7 @@ module TCP_encoder (src_ip, dest_ip,
       end
       WRITE_2: /* do nothing */;
       WRITE_3: /* do nothing */;
-      WRITE_4: enable_opt_dc <= 1;
+      WRITE_4: enable_opt_ec <= 1;
       WRITE_5: /* do nothing */;
       OPTION: option_word_left <= option_word_left - 1;
       WRITE_DATA: 
