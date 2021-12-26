@@ -37,7 +37,7 @@ module TCP_option_encoder (enable, clk, reset, option_av, mss, scale_wnd,
     else if (option_av[0] && option_done < 6) option_num = 0;
     else option_num = 1;
   end
-  // Priority option selector - start 
+  // Priority option selector - end 
   
   
   // Option output - start

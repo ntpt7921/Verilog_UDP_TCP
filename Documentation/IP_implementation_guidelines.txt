@@ -81,8 +81,10 @@ Giá trị checksum cho riêng phần header. Tính toán giống như header TC
 Độ dài của trường này sẽ được xác định bằng giá trị trường IHL. Bỏ  qua không dọc phần option này.
 
 
-
-
+---------------------------------------
+*TÀI LIỆU THAM KHẢO
+https://en.wikipedia.org/wiki/IPv4
+https://datatracker.ietf.org/doc/html/rfc791
 
 
 

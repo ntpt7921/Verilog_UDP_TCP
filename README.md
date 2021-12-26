@@ -31,7 +31,7 @@ trong đây `-y <tên tệp>` được dùng để liệt kê các tệp thư vi
   - [x] UDP
   - [x] TCP
   - [x] IP
-  - [ ] Sơ đồ khối các khối tin lớn
+  - [x] Sơ đồ khối các khối tin lớn
   - [x] Sơ đồ khối kiến trúc hệ thông
   - [x] State diagram
 - UDP
