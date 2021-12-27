@@ -99,8 +99,9 @@ module combine_decoder_tb ();
     change_tcp_header_value('ha08f, 'h2694, 1, 2, 5, 6'b11_1111, 3, 'hb0ec, 4);
     
     send_ip_data();
-    //send_tcp_data();
-    send_udp_data('ha08f, 'h2694, package_data_length + 8);
+    
+    //send_tcp_data(); // uncomment this for tcp
+    //send_udp_data('ha08f, 'h2694, package_data_length + 8); // uncomment this for udp
     
     #20;
     $finish;
