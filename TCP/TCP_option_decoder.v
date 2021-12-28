@@ -39,7 +39,7 @@ module TCP_option_decoder (data, clk, reset,
       bytes[i] == 4 || bytes[i] == 5 || bytes[i] == 8 ;
   
   reg [2:0] pos0, pos1;
-  reg [2:0] start_at_0, start_at_1; // assigned in *Bytes skip logic
+  reg [5:0] start_at_0, start_at_1; // assigned in *Bytes skip logic
   always @(option_str_detected or start_at_0 or start_at_1) begin
     if (option_str_detected[0] && start_at_0 < 1) pos0 = 0;
     else if (option_str_detected[1] && start_at_0 < 2) pos0 = 1;
