@@ -114,7 +114,7 @@ module UDP_decoder (dest_ip, src_ip, len_udp, data,
         dest_port <= data[15:0];
       end
       READ_2: begin
-        len_data <= data[31:16];
+        len_data <= data[31:16] - 8;
       end
       READ_DATA: begin
         data_udp <= data;
