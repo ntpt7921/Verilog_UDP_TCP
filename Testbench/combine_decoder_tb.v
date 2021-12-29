@@ -94,7 +94,7 @@ module combine_decoder_tb ();
     clk = 0;
     load_new_package_data("Hello World");
     change_ip_header_value(4'd4, 4'd5, 8'd0, package_data_length + 28, // 28 for udp, 40 for tcp 
-                           16'h1234, 3'b000, 13'h123, 8'h10, 6, // 6 for udp, 17 for tcp
+                           16'h1234, 3'b000, 13'h123, 8'h10, 6, // 17 for udp, 6 for tcp
                            16'hd601, 32'h9801_331b, 32'h980e_5e4b); 
     change_tcp_header_value('ha08f, 'h2694, 1, 2, 5, 6'b11_1111, 3, 'hb0ec, 4);
     
