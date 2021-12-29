@@ -135,11 +135,11 @@ module combine_decoder (data, start, clk, reset,
   
   // Combine output logic
   assign ok = ok_ip && 
-              ((protocol == 8'd17) ? ok_tcp : 1) && 
-              ((protocol == 8'd6) ? ok_udp : 1);
+              ((protocol == 8'd6) ? ok_tcp : 1) && 
+              ((protocol == 8'd17) ? ok_udp : 1);
   assign fin = fin_ip && 
-               ((protocol == 8'd17) ? fin_tcp : 1) && 
-               ((protocol == 8'd6) ? fin_udp : 1);
+               ((protocol == 8'd6) ? fin_tcp : 1) && 
+               ((protocol == 8'd17) ? fin_udp : 1);
   
   
   // Enable logic
@@ -148,8 +148,8 @@ module combine_decoder (data, start, clk, reset,
     enable_udp_rd = 0;
     enable_tcp_rd = 0;
     if (wr_en_ip == 1) begin
-      if (protocol == 8'd6) enable_udp_rd = 1;
-      if (protocol == 8'd17) enable_tcp_rd = 1;
+      if (protocol == 8'd17) enable_udp_rd = 1;
+      if (protocol == 8'd6) enable_tcp_rd = 1;
     end
   end
   
