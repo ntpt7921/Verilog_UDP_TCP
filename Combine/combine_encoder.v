@@ -106,6 +106,8 @@ module combine_encoder (data, udp0_tcp1, clk, reset, start, data_av,
   assign pkg_data = pkg_data_ip; // may change later
   
   
+  wire start_tcp, start_udp; // set in Logic & Multiplex & Control State Machine part
+  
   
   // UDP encoder
   UDP_encoder udp_e (.src_ip(src_ip), .dest_ip(dest_ip),
@@ -152,7 +154,6 @@ module combine_encoder (data, udp0_tcp1, clk, reset, start, data_av,
   assign protocol = (udp0_tcp1 == 0) ? 17 :
                     (udp0_tcp1 == 1) ? 6 : 0;
   // Start signal for for UDP and TCP module
-  wire start_tcp, start_udp;
   assign start_udp = (udp0_tcp1 == 0) && start;
   assign start_tcp = (udp0_tcp1 == 1) && start;
   

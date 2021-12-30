@@ -82,6 +82,32 @@ module IP_decoder_tb ();
     chksum_r = chksum_v;
     src_ip_r = src_ip_v;
     dest_ip_r = dest_ip_v;
+    
+    // printing IP header field value
+    // version, IHL, type of service, total length, id, flags, frag offset,
+    // time to live, protocol, checksum, source ip, dest ip
+    $display("IP Header Fields' Values:");
+    $display("Version:\t\t%1d\t\t%1h", version_r, version_r);
+    $display("IHL:\t\t\t%1d\t\t%1h", IHL_r, IHL_r);
+    $display("Type of Service:\t%1d\t\t%1h", type_of_ser_r, type_of_ser_r);
+    $display("Total Length:\t\t%1d\t\t%1h", total_length_r, total_length_r);
+    $display("Identification:\t\t%1d\t\t%1h", identification_r, identification_r);
+    $display("Flags:\t\t\t%1d\t\t%1h", flag_r, flag_r);
+    $display("Fragment Offset:\t%1d\t\t%1h", frag_offset_r, frag_offset_r);
+    $display("Time to Live:\t\t%1d\t\t%1h", time_to_live_r, time_to_live_r);
+    $display("Protocol:\t\t%1d\t\t%1h", protocol_r, protocol_r);
+    $display("Header Checksum:\t%1d\t\t%1h", chksum_r, chksum_r);
+    $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip_r[31:24], 
+                                                   src_ip_r[23:16], 
+                                                   src_ip_r[15:8], 
+                                                   src_ip_r[7:0], 
+                                                   src_ip_r);
+    $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip_r[31:24], 
+                                                        dest_ip_r[23:16], 
+                                                        dest_ip_r[15:8], 
+                                                        dest_ip_r[7:0],
+                                                        dest_ip_r);
+    $display(); // create a blank line
   endtask
   
   task send_ip_data;
@@ -118,7 +144,7 @@ module IP_decoder_tb ();
     #1 clk = ~clk;
  
   initial begin
-    $display("  T\td\t\tstart\tclk\trst\tver\tIHL\tTofSe\tlen\tid\tflag\tfr_os\tTtoL\tprtcl\tsip\t\tdip\t\tl_tcp\tdout\t\twr_en\tok\tfin\tchks");
+    $display("  T\td\t\tstart\tclk\trst\tver\tIHL\tTofSe\tlen\tid\tflag\tfr_os\tTtoL\tprtcl\tsip\t\tdip\t\tl_out\tdout\t\twr_en\tok\tfin\tchks");
     $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
              $time, data, start, clk, reset,
                     version, IHL, type_of_ser, total_length, identification, flag,

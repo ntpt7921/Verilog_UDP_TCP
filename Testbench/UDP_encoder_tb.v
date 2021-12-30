@@ -16,7 +16,7 @@ module UDP_encoder_tb ();
   initial begin
     clk = 0;
     no_chksum = 0;
-    change_starting_info(1, 2, 'ha08f, 'h2694, package_data_length);
+    change_starting_info(32'h9801_331b, 32'h980e_5e4b, 'ha08f, 'h2694, package_data_length);
     load_new_package_data("Hello World");
     send_udp_data();
     #6;
@@ -32,6 +32,29 @@ module UDP_encoder_tb ();
     src_port = src_port_value;
     dest_port = dest_port_value;
     len_in = len_value;
+    
+    // printing IP pseduo header field value
+    $display("IP Pseudo Header Fields' Values:");
+    $display("UDP Length:\t\t%1d\t\t%1h", len_in, len_in);
+    $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip[31:24], 
+                                                   src_ip[23:16], 
+                                                   src_ip[15:8], 
+                                                   src_ip[7:0], 
+                                                   src_ip);
+    $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip[31:24], 
+                                                        dest_ip[23:16], 
+                                                        dest_ip[15:8], 
+                                                        dest_ip[7:0],
+                                                        dest_ip);
+    $display(); // create a blank line
+    // printing UDP header field value
+    // source port, dest port, length, checksum
+    $display("UDP Header Fields' Values:");
+    $display("Source Port:\t\t%1d\t\t%1h", src_port, src_port);
+    $display("Destination Port:\t%1d\t\t%1h", dest_port, dest_port);
+    $display("Length:\t\t\t%1d\t\t%1h", len_in, len_in);
+    $display("Checksum:\t\t*\t\t*\t(Create by module)");
+    $display(); // create a blank line
   endtask
   
   

@@ -10,7 +10,7 @@ module IP_encoder_tb ();
   reg [7:0] protocol;
   reg [31:0] src_ip;
   reg [31:0] dest_ip;
-  reg check;
+  reg check; // 0 for udp, 1 for tcp
   
   reg [15:0] len_in;
   reg [31:0] data;
@@ -28,8 +28,9 @@ module IP_encoder_tb ();
     clk = 0;
     checksum_in = 16'h0000;
     change_starting_info(4'd4, 4'd5, 8'd0,
-                         16'h1234, 3'b000, 13'h123, 8'h10, 17,
-                         32'h9801_331b, 32'h980e_5e4b, 1'b0, package_data_length);
+                         16'h1234, 3'b000, 13'h123, 8'h10, 6, // protocol: 17 is udp, 6 is tcp
+                         32'h9801_331b, 32'h980e_5e4b, 1'b1, // check: 0 is udp, 1 is tcp
+                         package_data_length);
     load_new_package_data("Hello WorldHello World");
     send_pkg_data();
     #14;
@@ -52,17 +53,44 @@ module IP_encoder_tb ();
     input [15:0] len_value;
     
     version = version_v;
-    IHL=IHL_v;
-    type_of_ser=type_of_ser_v;
-    identification=identification_v;
-    flag=flag_v;
-    frag_offset=frag_offset_v;
-    time_to_live=time_to_live_v;
+    IHL = IHL_v;
+    type_of_ser = type_of_ser_v;
+    identification = identification_v;
+    flag = flag_v;
+    frag_offset = frag_offset_v;
+    time_to_live = time_to_live_v;
     protocol = protocol_v;
-    src_ip=src_ip_v;
-    dest_ip=dest_ip_v;
+    src_ip = src_ip_v;
+    dest_ip = dest_ip_v;
     check = check_v;
     len_in = len_value;
+    
+    // printing IP header field value
+    // version, IHL, type of service, total length, id, flags, frag offset,
+    // time to live, protocol, checksum, source ip, dest ip
+    $display("IP Header Fields' Values:");
+    $display("Version:\t\t%1d\t\t%1h", version, version);
+    $display("IHL:\t\t\t%1d\t\t%1h", IHL, IHL);
+    $display("Type of Service:\t%1d\t\t%1h", type_of_ser, type_of_ser);
+    $display("Total Length:\t\t*\t\t*\t(Create by module)");
+    $display("Identification:\t\t%1d\t\t%1h", identification, identification);
+    $display("Flags:\t\t\t%1d\t\t%1h", flag, flag);
+    $display("Fragment Offset:\t%1d\t\t%1h", frag_offset, frag_offset);
+    $display("Time to Live:\t\t%1d\t\t%1h", time_to_live, time_to_live);
+    $display("Protocol:\t\t%1d\t\t%1h", protocol, protocol);
+    $display("Header Checksum:\t*\t\t*\t(Create by module)");
+    $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip[31:24], 
+                                                   src_ip[23:16], 
+                                                   src_ip[15:8], 
+                                                   src_ip[7:0], 
+                                                   src_ip);
+    $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip[31:24], 
+                                                        dest_ip[23:16], 
+                                                        dest_ip[15:8], 
+                                                        dest_ip[7:0],
+                                                        dest_ip);
+    $display(); // create a blank line
+    
   endtask
   
   

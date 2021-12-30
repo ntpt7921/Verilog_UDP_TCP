@@ -75,35 +75,38 @@ module combine_decoder_tb ();
   reg [31:0] src_ip_r;
   reg [31:0] dest_ip_r;
   
-  reg [8*package_data_length-1:0] package_data;
-  parameter package_data_length = 11;
-  
-  reg [15:0] src_port_reg;
-  reg [15:0] dest_port_reg;
+  reg [15:0] src_port_reg; // used for udp and tcp
+  reg [15:0] dest_port_reg; // used for udp and tcp
   reg [31:0] seq_num_reg;
   reg [31:0] ack_num_reg;
   reg [3:0] data_offset_reg;
   reg f_urg_reg, f_ack_reg, f_psh_reg, f_rst_reg, f_syn_reg, f_fin_reg;
   reg [15:0] window_reg;
-  reg [15:0] checksum_reg;
+  reg [15:0] checksum_reg; // used for udp and tcp
   reg [15:0] urg_ptr_reg;
+  reg [15:0] length_reg; // used for udp
+  
+  reg [8*package_data_length-1:0] package_data;
+  parameter package_data_length = 11;
   
   
   
   initial begin
     clk = 0;
+    
+    
     load_new_package_data("Hello World");
     change_ip_header_value(4'd4, 4'd5, 8'd0, package_data_length + 28, // 28 for udp, 40 for tcp 
-                           16'h1234, 3'b000, 13'h123, 8'h10, 6, // 17 for udp, 6 for tcp
+                           16'h1234, 3'b000, 13'h123, 8'h10, 17, // 6 for tcp, 17 for udp
                            16'hd601, 32'h9801_331b, 32'h980e_5e4b); 
-    change_tcp_header_value('ha08f, 'h2694, 1, 2, 5, 6'b11_1111, 3, 'hb0ec, 4);
+    //change_tcp_header_value('ha08f, 'h2694, 1, 2, 5, 6'b11_1111, 3, 'hd528, 4); // uncomment for tcp
+    change_udp_header_value('ha08f, 'h2694, package_data_length + 8, 'h2560); // uncomment for udp
     
     send_ip_data();
+    //send_tcp_data(); // uncomment for tcp
+    send_udp_data(); // uncomment for udp
     
-    //send_tcp_data(); // uncomment this for tcp
-    //send_udp_data('ha08f, 'h2694, package_data_length + 8); // uncomment this for udp
-    
-    #20;
+    @(posedge fin);
     $finish;
   end
   
@@ -140,6 +143,33 @@ module combine_decoder_tb ();
     chksum_r = chksum_v;
     src_ip_r = src_ip_v;
     dest_ip_r = dest_ip_v;
+    
+    // printing IP header field value
+    // version, IHL, type of service, total length, id, flags, frag offset,
+    // time to live, protocol, checksum, source ip, dest ip
+    $display("IP Header Fields' Values:");
+    $display("Version:\t\t%1d\t\t%1h", version_r, version_r);
+    $display("IHL:\t\t\t%1d\t\t%1h", IHL_r, IHL_r);
+    $display("Type of Service:\t%1d\t\t%1h", type_of_ser_r, type_of_ser_r);
+    $display("Total Length:\t\t%1d\t\t%1h", total_length_r, total_length_r);
+    $display("Identification:\t\t%1d\t\t%1h", identification_r, identification_r);
+    $display("Flags:\t\t\t%1d\t\t%1h", flag_r, flag_r);
+    $display("Fragment Offset:\t%1d\t\t%1h", frag_offset_r, frag_offset_r);
+    $display("Time to Live:\t\t%1d\t\t%1h", time_to_live_r, time_to_live_r);
+    $display("Protocol:\t\t%1d\t\t%1h", protocol_r, protocol_r);
+    $display("Header Checksum:\t%1d\t\t%1h", chksum_r, chksum_r);
+    $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip_r[31:24], 
+                                                   src_ip_r[23:16], 
+                                                   src_ip_r[15:8], 
+                                                   src_ip_r[7:0], 
+                                                   src_ip_r);
+    $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip_r[31:24], 
+                                                        dest_ip_r[23:16], 
+                                                        dest_ip_r[15:8], 
+                                                        dest_ip_r[7:0],
+                                                        dest_ip_r);
+    $display(); // create a blank line
+    
   endtask
   
   task send_ip_data;
@@ -179,6 +209,22 @@ module combine_decoder_tb ();
     window_reg = window_value;
     checksum_reg = checksum_value;
     urg_ptr_reg = urg_ptr_value;
+    
+    // printing TCP header field value
+    // source port, dest port, seq num, ack num, data offset, control bits, 
+    // window, checksum, urgent pointer
+    $display("TCP Header Fields' Values:");
+    $display("Source Port:\t\t%1d\t\t%1h", src_port_value, src_port_value);
+    $display("Destination Port:\t%1d\t\t%1h", dest_port_value, dest_port_value);
+    $display("Seq Number:\t\t%1d\t\t%1h", seq_num_value, seq_num_value);
+    $display("Ack Number:\t\t%1d\t\t%1h", ack_num_value, ack_num_value);
+    $display("Data Offset:\t\t%1d\t\t%1h", data_offset_value, data_offset_value);
+    $display("Control Bits:\t\t%1d\t\t%1h", flag_value, flag_value);
+    $display("Window:\t\t\t%1d\t\t%1h", window_value, window_value);
+    $display("Checksum:\t\t%1d\t\t%1h", checksum_value, checksum_value);
+    $display("Urgent Pointer:\t\t%1d\t\t%1h", urg_ptr_value, urg_ptr_value);
+    $display(); // create a blank line
+    
   endtask
   
   task send_tcp_data;
@@ -204,12 +250,31 @@ module combine_decoder_tb ();
     start = 0;
   endtask
   
+  task change_udp_header_value;
+    input [15:0] src_port_value, dest_port_value;
+    input [15:0] length_value, checksum_value;
+    
+    src_port_reg = src_port_value;
+    dest_port_reg = dest_port_value;
+    length_reg = length_value;
+    checksum_reg = checksum_value;
+    
+    // printing UDP header field value
+    // source port, dest port, length, checksum
+    $display("TCP Header Fields' Values:");
+    $display("Source Port:\t\t%1d\t\t%1h", src_port_value, src_port_value);
+    $display("Destination Port:\t%1d\t\t%1h", dest_port_value, dest_port_value);
+    $display("Length:\t\t\t%1d\t\t%1h", dest_port_value, dest_port_value);
+    $display("Checksum:\t\t%1d\t\t%1h", checksum_value, checksum_value);
+    $display(); // create a blank line
+    
+  endtask
+  
   task send_udp_data;
-    input [15:0] src_udp_port_value, dest_udp_port_value, len_udp_value;
-    data = {src_udp_port_value, dest_udp_port_value};
+    data = {src_port_reg, dest_port_reg};
     @(negedge clk);
     start = 0;
-    data = {len_udp_value, 16'h0000}; // checksum for current test
+    data = {length_reg, checksum_reg};
     @(negedge clk);
     data = package_data[11*8-1:7*8];
     @(negedge clk);
@@ -243,13 +308,13 @@ module combine_decoder_tb ();
   wire [5:0] flag_tcp;
   assign flag_tcp = {f_urg, f_ack, f_psh, f_rst, f_syn, f_fin};
   initial begin
-    $display("  T\tdata\t\tstr\tclk\trst\tsport\tdport\tsnum\t\tanum\t\tflag\twnd\tu_ptr\tlen_tcp\tdata_tcp\twre_tcp\tok_tcp\tfin_tcp");
+    $display("  T\tdata\t\tstr\tclk\trst\tsport\tdport\tsnum\t\tanum\t\tcbits\twnd\tu_ptr\tlen_tcp\tdata_tcp\twre_tcp\tok_tcp\tfin_tcp");
     $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
              $time, data, start, clk, reset,
              src_port_tcp, dest_port_tcp, seq_num, ack_num, 
              flag_tcp, window, urg_ptr, len_tcp_data, 
              data_tcp_out, wr_en_tcp, ok_tcp, fin_tcp,
-             dut.tcp_d.bytes_left);
+             dut.tcp_d.complete_checksum);
   end
   */
   
@@ -257,10 +322,10 @@ module combine_decoder_tb ();
   // use this to see UDP output
   initial begin
     $display("  T\tdip\t\tstr\tclk\trst\tdp_udp\tsp_udp\tlen_udp\td_udp\t\twre_dup\tok_udp\tfin_udp");
-    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
+    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
              $time, data, start, clk, reset,
              dest_port_udp, src_port_udp, len_udp_data, data_udp_out,
-             wr_en_udp, ok_udp, fin_udp);
+             wr_en_udp, ok_udp, fin_udp, dut.udp_d.complete_checksum);
   end
   
   

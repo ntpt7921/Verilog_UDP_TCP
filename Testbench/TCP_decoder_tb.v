@@ -45,9 +45,12 @@ module TCP_decoder_tb ();
   
   initial begin
     clk = 0;
-    change_ip_info('h9801_331b, 'h980e_5e4b, package_data_length + 6*4);
-    change_tcp_header_info('ha08f, 'h2694, 1, 2, 6, 6'b11_1111, 3, 'hb0ec, 4);
     load_new_package_data("Hello World");
+    
+    change_ip_info('h9801_331b, 'h980e_5e4b, package_data_length + 5*4);
+    change_tcp_header_info('ha08f, 'h2694, 1, 2, 5, // data offset: =5 if no option
+                            6'b11_1111, 3, 'hd528, 4);
+    
     send_tcp_data();
     #4;
     $finish;  
@@ -71,8 +74,11 @@ module TCP_decoder_tb ();
             window_reg};
     @(negedge clk);
     data = {checksum_reg, urg_ptr_reg};
+    /*
+    // option generating part
     @(negedge clk);
-    data = 32'h02041234;
+    data = 32'h02041234; // simulate option 2 (mss = 'h1234)
+    */
     @(negedge clk);
     data = package_data[11*8-1:7*8];
     @(negedge clk);
@@ -90,10 +96,25 @@ module TCP_decoder_tb ();
   
   task change_ip_info;
     input [31:0] src_ip_value, dest_ip_value;
-    input [15:0] len_udp_value;
+    input [15:0] len_tcp_value;
     dest_ip = dest_ip_value;
     src_ip = src_ip_value;
-    len_tcp = len_udp_value;
+    len_tcp = len_tcp_value;
+    
+    // printing IP pseduo header field value
+    $display("IP Pseudo Header Fields' Values:");
+    $display("TCP Length:\t\t%1d\t\t%1h", len_tcp, len_tcp);
+    $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip[31:24], 
+                                                   src_ip[23:16], 
+                                                   src_ip[15:8], 
+                                                   src_ip[7:0], 
+                                                   src_ip);
+    $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip[31:24], 
+                                                        dest_ip[23:16], 
+                                                        dest_ip[15:8], 
+                                                        dest_ip[7:0],
+                                                        dest_ip);
+    $display(); // create a blank line
   endtask
   
   task change_tcp_header_info;
@@ -112,6 +133,21 @@ module TCP_decoder_tb ();
     window_reg = window_value;
     checksum_reg = checksum_value;
     urg_ptr_reg = urg_ptr_value;
+    
+    // printing TCP header field value
+    // source port, dest port, seq num, ack num, data offset, control bits, 
+    // window, checksum, urgent pointer
+    $display("TCP Header Fields' Values:");
+    $display("Source Port:\t\t%1d\t\t%1h", src_port_reg, src_port_reg);
+    $display("Destination Port:\t%1d\t\t%1h", dest_port_reg, dest_port_reg);
+    $display("Seq Number:\t\t%1d\t\t%1h", seq_num_reg, seq_num_reg);
+    $display("Ack Number:\t\t%1d\t\t%1h", ack_num_reg, ack_num_reg);
+    $display("Data Offset:\t\t%1d\t\t%1h", data_offset_reg, data_offset_reg);
+    $display("Control Bits:\t\t%1d\t\t%1h", flag_value, flag_value);
+    $display("Window:\t\t\t%1d\t\t%1h", window_reg, window_reg);
+    $display("Checksum:\t\t%1d\t\t%1h", checksum_reg, checksum_reg);
+    $display("Urgent Pointer:\t\t%1d\t\t%1h", urg_ptr_reg, urg_ptr_reg);
+    $display(); // create a blank line
   endtask
   
   
@@ -122,8 +158,8 @@ module TCP_decoder_tb ();
   wire [5:0] flag;
   assign flag = {f_urg, f_ack, f_psh, f_rst, f_syn, f_fin};
   initial begin
-    $display("  T\tdata\t\tstr\tclk\trst\tsport\tdport\tsnum\t\tanum\t\tflag\tlen\tdata\t\twr_en\tok\tfin\tdut.chks\tdut.oe");
-    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%b\t%h\t%h\t%h\t%h\t%h\t%h\t\t%b", 
+    $display("  T\tdata\t\tstr\tclk\trst\tsport\tdport\tsnum\t\tanum\t\tcbits\tlen\tdata\t\twr_en\tok\tfin\tdut.chks\tdut.oe");
+    $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t\t%b", 
              $time, data, start, clk, reset, src_port, dest_port, seq_num, ack_num, 
              flag, len_data, data_tcp, wr_en, ok, fin, dut.complete_checksum, dut.option_err);
    // $dumpvars(0, UDP_decoder_tb);
