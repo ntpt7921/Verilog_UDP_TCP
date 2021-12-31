@@ -22,32 +22,38 @@ module buffer_memory_tb ();
   end
   
   task reset_mem;
-    @(negedge clk);
-    reset = 1;
-    @(negedge clk);
-    reset = 0;
+    begin
+      @(negedge clk);
+      reset = 1;
+      @(negedge clk);
+      reset = 0;
+    end
   endtask
   
   task write_mem;
     input [13:0] addr_wr_value;
     input [31:0] data_in_value;
     
-    @(negedge clk)
-    wr_en = 1;
-    addr_wr = addr_wr_value;
-    data_in = data_in_value;
-    @(negedge clk)
-    wr_en = 0;
+    begin
+      @(negedge clk)
+      wr_en = 1;
+      addr_wr = addr_wr_value;
+      data_in = data_in_value;
+      @(negedge clk)
+      wr_en = 0;
+    end
   endtask
   
   task read_mem;
     input [13:0] addr_rd_value;
     
-    @(negedge clk)
-    rd_en = 1;
-    addr_rd = addr_rd_value;
-    @(negedge clk);
-    rd_en = 0;
+    begin
+      @(negedge clk)
+      rd_en = 1;
+      addr_rd = addr_rd_value;
+      @(negedge clk);
+      rd_en = 0;
+    end
   endtask
   
   task read_write_mem;
@@ -55,15 +61,17 @@ module buffer_memory_tb ();
     input [31:0] data_in_value;
     input [13:0] addr_rd_value;
     
-    @(negedge clk)
-    rd_en = 1;
-    wr_en = 1;
-    addr_wr = addr_wr_value;
-    data_in = data_in_value;
-    addr_rd = addr_rd_value;
-    @(negedge clk)
-    wr_en = 0;
-    rd_en = 0;
+    begin
+      @(negedge clk)
+      rd_en = 1;
+      wr_en = 1;
+      addr_wr = addr_wr_value;
+      data_in = data_in_value;
+      addr_rd = addr_rd_value;
+      @(negedge clk)
+      wr_en = 0;
+      rd_en = 0;
+    end
   endtask
   
   always

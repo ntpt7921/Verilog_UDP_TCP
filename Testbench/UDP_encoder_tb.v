@@ -9,9 +9,11 @@ module UDP_encoder_tb ();
   wire [15:0] checksum_out;
   wire [15:0] len_out;
   wire wr_en, fin;
-
-  reg [8*package_data_length-1:0] package_data;
+  
+  
   parameter package_data_length = 11;
+  reg [8*package_data_length-1:0] package_data;
+  
 
   initial begin
     clk = 0;
@@ -44,62 +46,69 @@ module UDP_encoder_tb ();
   task change_starting_info;
     input [31:0] src_ip_value, dest_ip_value;
     input [15:0] src_port_value, dest_port_value, len_value;
-    src_ip = src_ip_value;
-    dest_ip = dest_ip_value; 
-    src_port = src_port_value;
-    dest_port = dest_port_value;
-    len_in = len_value;
     
-    // printing IP pseduo header field value
-    $display("IP Pseudo Header Fields' Values:");
-    $display("UDP Length:\t\t*\t\t*\t(Create within module)");
-    $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip[31:24], 
-                                                   src_ip[23:16], 
-                                                   src_ip[15:8], 
-                                                   src_ip[7:0], 
-                                                   src_ip);
-    $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip[31:24], 
-                                                        dest_ip[23:16], 
-                                                        dest_ip[15:8], 
-                                                        dest_ip[7:0],
-                                                        dest_ip);
-    $display(); // create a blank line
-    // printing UDP header field value
-    // source port, dest port, length, checksum
-    $display("UDP Header Fields' Values:");
-    $display("Source Port:\t\t%1d\t\t%1h", src_port, src_port);
-    $display("Destination Port:\t%1d\t\t%1h", dest_port, dest_port);
-    $display("Length:\t\t\t%1d\t\t%1h", len_in, len_in);
-    $display("Checksum:\t\t*\t\t*\t(Create by module)");
-    $display(); // create a blank line
+    begin
+      src_ip = src_ip_value;
+      dest_ip = dest_ip_value; 
+      src_port = src_port_value;
+      dest_port = dest_port_value;
+      len_in = len_value;
+      
+      // printing IP pseduo header field value
+      $display("IP Pseudo Header Fields' Values:");
+      $display("UDP Length:\t\t*\t\t*\t(Create within module)");
+      $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip[31:24], 
+                                                     src_ip[23:16], 
+                                                     src_ip[15:8], 
+                                                     src_ip[7:0], 
+                                                     src_ip);
+      $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip[31:24], 
+                                                          dest_ip[23:16], 
+                                                          dest_ip[15:8], 
+                                                          dest_ip[7:0],
+                                                          dest_ip);
+      $display(); // create a blank line
+      // printing UDP header field value
+      // source port, dest port, length, checksum
+      $display("UDP Header Fields' Values:");
+      $display("Source Port:\t\t%1d\t\t%1h", src_port, src_port);
+      $display("Destination Port:\t%1d\t\t%1h", dest_port, dest_port);
+      $display("Length:\t\t\t%1d\t\t%1h", len_in, len_in);
+      $display("Checksum:\t\t*\t\t*\t(Create by module)");
+      $display(); // create a blank line
+    end
   endtask
   
   
   task send_udp_data;
-    @(negedge clk);
-    reset = 1;
-    @(negedge clk);
-    reset = 0;
-    start = 1;
-    data_av = 1;
-    data = package_data[11*8-1:7*8];
-    @(negedge clk);
-    start = 0;
-    data_av = 0;
-    data = package_data[7*8-1:3*8];
-    @(negedge clk);
-    data_av = 1;
-    @(negedge clk);
-    data = {package_data[3*8-1:0], 8'h00};
-    @(negedge clk);
-    start = 0;
-    data_av = 0;
+    begin
+      @(negedge clk);
+      reset = 1;
+      @(negedge clk);
+      reset = 0;
+      start = 1;
+      data_av = 1;
+      data = package_data[11*8-1:7*8];
+      @(negedge clk);
+      start = 0;
+      data_av = 0;
+      data = package_data[7*8-1:3*8];
+      @(negedge clk);
+      data_av = 1;
+      @(negedge clk);
+      data = {package_data[3*8-1:0], 8'h00};
+      @(negedge clk);
+      start = 0;
+      data_av = 0;
+    end
   endtask
   
   
   task load_new_package_data;
     input [8*package_data_length-1:0] value;
-    package_data = value;
+    begin
+      package_data = value;
+    end
   endtask
 
 

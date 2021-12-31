@@ -32,8 +32,10 @@ module checksum_calculator_tb ();
   
   task change_input;
     input [LENGTH-1:0] input_value;
-    @(negedge clk);
-    in = input_value;
+    begin
+      @(negedge clk);
+      in = input_value;
+    end
   endtask
   
   always

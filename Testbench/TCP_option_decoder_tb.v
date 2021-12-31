@@ -36,146 +36,166 @@ module TCP_option_decoder_tb ();
   
   task test_option_0;
     reg [31:0] content;
-    integer i;
-    content = {8'd0, 24'd0};
     
-    data = data | (content >> (8*cur_pos));
-    
-    if (cur_pos == 3) begin
-      @(negedge clk);
-      data = 32'd0;
+    begin
+      integer i;
+      content = {8'd0, 24'd0};
+      
+      data = data | (content >> (8*cur_pos));
+      
+      if (cur_pos == 3) begin
+        @(negedge clk);
+        data = 32'd0;
+      end
+      
+      cur_pos = (cur_pos + 1) % 4;
     end
-    
-    cur_pos = (cur_pos + 1) % 4;
   endtask
   
   task test_option_1;
     reg [31:0] content;
-    integer i;
-    content = {8'd1, 24'd0};
-    
-    data = data | (content >> (8*cur_pos));
-    
-    if (cur_pos == 3) begin
-      @(negedge clk);
-      data = 32'd0;
+   
+    begin
+      integer i;
+      content = {8'd1, 24'd0};
+      
+      data = data | (content >> (8*cur_pos));
+      
+      if (cur_pos == 3) begin
+        @(negedge clk);
+        data = 32'd0;
+      end
+      
+      cur_pos = (cur_pos + 1) % 4;
     end
-    
-    cur_pos = (cur_pos + 1) % 4;
   endtask
   
   task test_option_2;
     input [15:0] mss;
-    reg [31:0] content;
-    integer i, bytes_left;
-    content = {8'd2, 8'd4, mss};
     
-    data = data | (content >> (8*cur_pos));
-    bytes_left = cur_pos;
-    
-    if (bytes_left > 0) begin
-      @(negedge clk);
-      data = 32'd0 | (content << (8*(4-bytes_left)));
-    end else if (cur_pos == 0) begin
-      @(negedge clk);
-      data = 32'd0;
+    begin
+      reg [31:0] content;
+      integer i, bytes_left;
+      content = {8'd2, 8'd4, mss};
+      
+      data = data | (content >> (8*cur_pos));
+      bytes_left = cur_pos;
+      
+      if (bytes_left > 0) begin
+        @(negedge clk);
+        data = 32'd0 | (content << (8*(4-bytes_left)));
+      end else if (cur_pos == 0) begin
+        @(negedge clk);
+        data = 32'd0;
+      end
+      
+      cur_pos = (cur_pos + 4) % 4;
     end
-    
-    cur_pos = (cur_pos + 4) % 4;
-    
   endtask
   
   task test_option_3;
     input [7:0] scl_wnd;
-    reg [31:0] content;
-    integer i, bytes_left;
-    content = {8'd3, 8'd3, scl_wnd, 8'd0};
     
-    data = data | (content >> (8*cur_pos));
-    bytes_left = (cur_pos < 2) ? 0 : (3 - (4 - cur_pos));
-    
-    if (bytes_left > 0) begin
-      @(negedge clk);
-      data = 32'd0 | (content << (8*(3-bytes_left)));
-    end else if (cur_pos == 1) begin
-      @(negedge clk);
-      data = 32'd0;
+    begin
+      reg [31:0] content;
+      integer i, bytes_left;
+      content = {8'd3, 8'd3, scl_wnd, 8'd0};
+      
+      data = data | (content >> (8*cur_pos));
+      bytes_left = (cur_pos < 2) ? 0 : (3 - (4 - cur_pos));
+      
+      if (bytes_left > 0) begin
+        @(negedge clk);
+        data = 32'd0 | (content << (8*(3-bytes_left)));
+      end else if (cur_pos == 1) begin
+        @(negedge clk);
+        data = 32'd0;
+      end
+      
+      cur_pos = (cur_pos + 3) % 4;
     end
-    
-    cur_pos = (cur_pos + 3) % 4;
   endtask
   
   task test_option_4;
     reg [31:0] content;
-    integer bytes_left;
-    content = {8'd4, 8'd2, 16'd0};
     
-    data = data | (content >> (8*cur_pos));
-    bytes_left = (cur_pos == 3) ? 1 : 0;
-    if (bytes_left == 1) begin
-      @(negedge clk);
-      data = 32'd0 | (content << 8);
-    end else if (cur_pos == 2) begin
-      @(negedge clk);
-      data = 32'd0;
+    begin
+      integer bytes_left;
+      content = {8'd4, 8'd2, 16'd0};
+      
+      data = data | (content >> (8*cur_pos));
+      bytes_left = (cur_pos == 3) ? 1 : 0;
+      if (bytes_left == 1) begin
+        @(negedge clk);
+        data = 32'd0 | (content << 8);
+      end else if (cur_pos == 2) begin
+        @(negedge clk);
+        data = 32'd0;
+      end
+      
+      cur_pos = (cur_pos + 2) % 4;
     end
-    
-    cur_pos = (cur_pos + 2) % 4;
   endtask
   
   task test_option_5;
     input [7:0] sack_nbr_value;
-    reg [31:0] pattern;
-    reg [63:0] sack_pack;
-    reg [8*34-1:0] pkg;
-    integer i, skip_byte, bytes_left;
-    pattern = 31'h12345678;
-    sack_pack = {pattern, pattern};
-    pkg = {8'd5, (sack_nbr_value<<3) + 8'd2, {4{sack_pack}}};
-    skip_byte = 34 - 8*sack_nbr_value - 2;
     
-    
-    data = data | (pkg >> (8*(cur_pos+30)));
-    bytes_left = ((sack_nbr_value<<3) + 8'd2) - (4 - cur_pos);
-    @(negedge clk);
-    
-    while (bytes_left > 0) begin
-      if (bytes_left > 3) begin
-        data = 32'd0 | ((pkg >> 8*skip_byte) >> 8*(bytes_left-4));
-        bytes_left = bytes_left-4;
-        @(negedge clk);
+    begin
+      reg [31:0] pattern;
+      reg [63:0] sack_pack;
+      reg [8*34-1:0] pkg;
+      integer i, skip_byte, bytes_left;
+      pattern = 31'h12345678;
+      sack_pack = {pattern, pattern};
+      pkg = {8'd5, (sack_nbr_value<<3) + 8'd2, {4{sack_pack}}};
+      skip_byte = 34 - 8*sack_nbr_value - 2;
+      
+      
+      data = data | (pkg >> (8*(cur_pos+30)));
+      bytes_left = ((sack_nbr_value<<3) + 8'd2) - (4 - cur_pos);
+      @(negedge clk);
+      
+      while (bytes_left > 0) begin
+        if (bytes_left > 3) begin
+          data = 32'd0 | ((pkg >> 8*skip_byte) >> 8*(bytes_left-4));
+          bytes_left = bytes_left-4;
+          @(negedge clk);
+        end
+        else begin
+          data = 32'd0 | ((pkg >> 8*skip_byte) << 8*(4-bytes_left));
+          bytes_left = 0;
+        end
       end
-      else begin
-        data = 32'd0 | ((pkg >> 8*skip_byte) << 8*(4-bytes_left));
-        bytes_left = 0;
-      end
+      
+      cur_pos = (cur_pos + 10) % 4;
     end
-    
-    cur_pos = (cur_pos + 10) % 4;
   endtask
   
   task test_option_8;
     input [63:0] time_stp_value;
-    reg [79:0] content;
-    integer i, bytes_left;
-    content = {8'd8, 8'd10, time_stp_value};
     
-    data = data | (content >> (8*(cur_pos+6)));
-    bytes_left = 10 - (4 - cur_pos);
-    @(negedge clk);
-    while (bytes_left > 0) begin
-      if (bytes_left > 3) begin
-        data = 32'd0 | (content >> (8*(bytes_left-4)));
-        bytes_left = bytes_left-4;
-        @(negedge clk);
+    begin
+      reg [79:0] content;
+      integer i, bytes_left;
+      content = {8'd8, 8'd10, time_stp_value};
+      
+      data = data | (content >> (8*(cur_pos+6)));
+      bytes_left = 10 - (4 - cur_pos);
+      @(negedge clk);
+      while (bytes_left > 0) begin
+        if (bytes_left > 3) begin
+          data = 32'd0 | (content >> (8*(bytes_left-4)));
+          bytes_left = bytes_left-4;
+          @(negedge clk);
+        end
+        else begin
+          data = 32'd0 | (content << (8*(4-bytes_left)));
+          bytes_left = 0;
+        end
       end
-      else begin
-        data = 32'd0 | (content << (8*(4-bytes_left)));
-        bytes_left = 0;
-      end
+      
+      cur_pos = (cur_pos + 10) % 4;
     end
-    
-    cur_pos = (cur_pos + 10) % 4;
   endtask
   
   always

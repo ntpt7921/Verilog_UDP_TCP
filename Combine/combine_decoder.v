@@ -10,7 +10,7 @@ module combine_decoder (data, start, clk, reset,
                         time_stp, option_err, len_tcp_data, data_tcp_out,
                         wr_en_tcp, ok_tcp, fin_tcp,
                         dest_port_udp, src_port_udp, len_udp_data, data_udp_out,
-                        wr_en_udp, ok_udp, fin_udp);
+                        wr_en_udp, ok_udp, fin_udp, ok, fin);
   // IP Input Interface
   input [31:0] data;
   input start;
@@ -134,11 +134,11 @@ module combine_decoder (data, start, clk, reset,
   
   
   // Combine output logic
-  assign ok = ok_ip && 
-              ((protocol == 8'd6) ? ok_tcp : 1) && 
+  assign ok = ok_ip &&
+              ((protocol == 8'd6) ? ok_tcp : 1) &&
               ((protocol == 8'd17) ? ok_udp : 1);
-  assign fin = fin_ip && 
-               ((protocol == 8'd6) ? fin_tcp : 1) && 
+  assign fin = fin_ip &&
+               ((protocol == 8'd6) ? fin_tcp : 1) &&
                ((protocol == 8'd17) ? fin_udp : 1);
   
   

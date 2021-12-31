@@ -36,8 +36,10 @@ module IP_decoder_tb ();
   reg [31:0] src_ip_r;
   reg [31:0] dest_ip_r;
   
-  reg [8*package_data_length-1:0] package_data;
+  
   parameter package_data_length = 11;
+  reg [8*package_data_length-1:0] package_data;
+  
   
   initial begin
     clk = 0;
@@ -53,7 +55,9 @@ module IP_decoder_tb ();
   
   task load_new_package_data;
     input [8*package_data_length-1:0] value;
-    package_data = value;
+    begin
+      package_data = value;
+    end
   endtask
   
   task change_ip_header_value;
@@ -70,74 +74,78 @@ module IP_decoder_tb ();
     input [31:0] src_ip_v;
     input [31:0] dest_ip_v;
     
-    version_r = version_v;
-    IHL_r = IHL_v;
-    type_of_ser_r = type_of_ser_v;
-    total_length_r = total_length_v;
-    identification_r = identification_v;
-    flag_r = flag_v;
-    frag_offset_r = frag_offset_v;
-    time_to_live_r = time_to_live_v;
-    protocol_r = protocol_v;
-    chksum_r = chksum_v;
-    src_ip_r = src_ip_v;
-    dest_ip_r = dest_ip_v;
-    
-    // printing IP header field value
-    // version, IHL, type of service, total length, id, flags, frag offset,
-    // time to live, protocol, checksum, source ip, dest ip
-    $display("IP Header Fields' Values:");
-    $display("Version:\t\t%1d\t\t%1h", version_r, version_r);
-    $display("IHL:\t\t\t%1d\t\t%1h", IHL_r, IHL_r);
-    $display("Type of Service:\t%1d\t\t%1h", type_of_ser_r, type_of_ser_r);
-    $display("Total Length:\t\t%1d\t\t%1h", total_length_r, total_length_r);
-    $display("Identification:\t\t%1d\t\t%1h", identification_r, identification_r);
-    $display("Flags:\t\t\t%1d\t\t%1h", flag_r, flag_r);
-    $display("Fragment Offset:\t%1d\t\t%1h", frag_offset_r, frag_offset_r);
-    $display("Time to Live:\t\t%1d\t\t%1h", time_to_live_r, time_to_live_r);
-    $display("Protocol:\t\t%1d\t\t%1h", protocol_r, protocol_r);
-    $display("Header Checksum:\t%1d\t\t%1h", chksum_r, chksum_r);
-    $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip_r[31:24], 
-                                                   src_ip_r[23:16], 
-                                                   src_ip_r[15:8], 
-                                                   src_ip_r[7:0], 
-                                                   src_ip_r);
-    $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip_r[31:24], 
-                                                        dest_ip_r[23:16], 
-                                                        dest_ip_r[15:8], 
-                                                        dest_ip_r[7:0],
-                                                        dest_ip_r);
-    $display(); // create a blank line
+    begin
+      version_r = version_v;
+      IHL_r = IHL_v;
+      type_of_ser_r = type_of_ser_v;
+      total_length_r = total_length_v;
+      identification_r = identification_v;
+      flag_r = flag_v;
+      frag_offset_r = frag_offset_v;
+      time_to_live_r = time_to_live_v;
+      protocol_r = protocol_v;
+      chksum_r = chksum_v;
+      src_ip_r = src_ip_v;
+      dest_ip_r = dest_ip_v;
+      
+      // printing IP header field value
+      // version, IHL, type of service, total length, id, flags, frag offset,
+      // time to live, protocol, checksum, source ip, dest ip
+      $display("IP Header Fields' Values:");
+      $display("Version:\t\t%1d\t\t%1h", version_r, version_r);
+      $display("IHL:\t\t\t%1d\t\t%1h", IHL_r, IHL_r);
+      $display("Type of Service:\t%1d\t\t%1h", type_of_ser_r, type_of_ser_r);
+      $display("Total Length:\t\t%1d\t\t%1h", total_length_r, total_length_r);
+      $display("Identification:\t\t%1d\t\t%1h", identification_r, identification_r);
+      $display("Flags:\t\t\t%1d\t\t%1h", flag_r, flag_r);
+      $display("Fragment Offset:\t%1d\t\t%1h", frag_offset_r, frag_offset_r);
+      $display("Time to Live:\t\t%1d\t\t%1h", time_to_live_r, time_to_live_r);
+      $display("Protocol:\t\t%1d\t\t%1h", protocol_r, protocol_r);
+      $display("Header Checksum:\t%1d\t\t%1h", chksum_r, chksum_r);
+      $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip_r[31:24], 
+                                                     src_ip_r[23:16], 
+                                                     src_ip_r[15:8], 
+                                                     src_ip_r[7:0], 
+                                                     src_ip_r);
+      $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip_r[31:24], 
+                                                          dest_ip_r[23:16], 
+                                                          dest_ip_r[15:8], 
+                                                          dest_ip_r[7:0],
+                                                          dest_ip_r);
+      $display(); // create a blank line
+    end
   endtask
   
   task send_ip_data;
-    reset = 1;
-    @(negedge clk);
-    reset = 0;
-    start = 1;
-    data = {version_r, IHL_r, type_of_ser_r, total_length_r};
-    @(negedge clk);
-    data = {identification_r, flag_r, frag_offset_r};
-    @(negedge clk);
-    data = {time_to_live_r, protocol_r, chksum_r};
-    @(negedge clk);
-    data = src_ip_r;
-    @(negedge clk);
-    data = dest_ip_r;
-    @(negedge clk);
-    repeat(IHL_r - 5) begin // option part, module will ignore this
-      data = 32'd0;
+    begin
+      reset = 1;
       @(negedge clk);
+      reset = 0;
+      start = 1;
+      data = {version_r, IHL_r, type_of_ser_r, total_length_r};
+      @(negedge clk);
+      data = {identification_r, flag_r, frag_offset_r};
+      @(negedge clk);
+      data = {time_to_live_r, protocol_r, chksum_r};
+      @(negedge clk);
+      data = src_ip_r;
+      @(negedge clk);
+      data = dest_ip_r;
+      @(negedge clk);
+      repeat(IHL_r - 5) begin // option part, module will ignore this
+        data = 32'd0;
+        @(negedge clk);
+      end
+      
+      data = package_data[11*8-1:7*8];
+      @(negedge clk);
+      start = 0;
+      data = package_data[7*8-1:3*8];
+      @(negedge clk);
+      data = {package_data[3*8-1:0], 8'h00};
+      @(negedge clk);
+      start = 0;
     end
-    
-    data = package_data[11*8-1:7*8];
-    @(negedge clk);
-    start = 0;
-    data = package_data[7*8-1:3*8];
-    @(negedge clk);
-    data = {package_data[3*8-1:0], 8'h00};
-    @(negedge clk);
-    start = 0;
   endtask
   
   always

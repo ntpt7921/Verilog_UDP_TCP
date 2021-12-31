@@ -10,8 +10,8 @@ module UDP_decoder_tb ();
   wire wr_en, ok, fin;
   
   
-  reg [8*package_data_length-1:0] package_data;
   parameter package_data_length = 11;
+  reg [8*package_data_length-1:0] package_data;
   reg [15:0] src_port_r, dest_port_r, len_udp_r, chks_udp_r;
   
   
@@ -33,70 +33,79 @@ module UDP_decoder_tb ();
   task change_ip_info;
     input [31:0] src_ip_value, dest_ip_value;
     input [15:0] len_udp_value;
-    dest_ip = dest_ip_value;
-    src_ip = src_ip_value;
-    len_udp = len_udp_value;
     
-    // printing IP pseduo header field value
-    $display("IP Pseudo Header Fields' Values:");
-    $display("UDP Length:\t\t%1d\t\t%1h", len_udp, len_udp);
-    $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip[31:24], 
-                                                   src_ip[23:16], 
-                                                   src_ip[15:8], 
-                                                   src_ip[7:0], 
-                                                   src_ip);
-    $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip[31:24], 
-                                                        dest_ip[23:16], 
-                                                        dest_ip[15:8], 
-                                                        dest_ip[7:0],
-                                                        dest_ip);
+    begin
+      dest_ip = dest_ip_value;
+      src_ip = src_ip_value;
+      len_udp = len_udp_value;
+      
+      // printing IP pseduo header field value
+      $display("IP Pseudo Header Fields' Values:");
+      $display("UDP Length:\t\t%1d\t\t%1h", len_udp, len_udp);
+      $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip[31:24], 
+                                                     src_ip[23:16], 
+                                                     src_ip[15:8], 
+                                                     src_ip[7:0], 
+                                                     src_ip);
+      $display("Destination IP:\t\t%1d.%1d.%1d.%1d\t%1h", dest_ip[31:24], 
+                                                          dest_ip[23:16], 
+                                                          dest_ip[15:8], 
+                                                          dest_ip[7:0],
+                                                          dest_ip);
     $display(); // create a blank line
+    end
   endtask
   
   task change_udp_header_value;
     input [15:0] src_port_value, dest_port_value;
     input [15:0] length_value, checksum_value;
     
-    src_port_r = src_port_value;
-    dest_port_r = dest_port_value;
-    len_udp_r = length_value;
-    chks_udp_r = checksum_value;
-    
-    // printing UDP header field value
-    // source port, dest port, length, checksum
-    $display("UDP Header Fields' Values:");
-    $display("Source Port:\t\t%1d\t\t%1h", src_port_r, src_port_r);
-    $display("Destination Port:\t%1d\t\t%1h", dest_port_r, dest_port_r);
-    $display("Length:\t\t\t%1d\t\t%1h", len_udp_r, len_udp_r);
-    $display("Checksum:\t\t%1d\t\t%1h", chks_udp_r, chks_udp_r);
-    $display(); // create a blank line
-    
+    begin
+      src_port_r = src_port_value;
+      dest_port_r = dest_port_value;
+      len_udp_r = length_value;
+      chks_udp_r = checksum_value;
+      
+      // printing UDP header field value
+      // source port, dest port, length, checksum
+      $display("UDP Header Fields' Values:");
+      $display("Source Port:\t\t%1d\t\t%1h", src_port_r, src_port_r);
+      $display("Destination Port:\t%1d\t\t%1h", dest_port_r, dest_port_r);
+      $display("Length:\t\t\t%1d\t\t%1h", len_udp_r, len_udp_r);
+      $display("Checksum:\t\t%1d\t\t%1h", chks_udp_r, chks_udp_r);
+      $display(); // create a blank line
+    end
   endtask
   
   task send_udp_data;
-    @(negedge clk);
-    reset = 1;
-    @(negedge clk);
-    reset = 0;
-    start = 1;
-    data = {src_port_r, dest_port_r};
-    @(negedge clk);
-    start = 0;
-    data = {len_udp_r, chks_udp_r}; // checksum for current test
-    @(negedge clk);
-    data = package_data[11*8-1:7*8];
-    @(negedge clk);
-    data = package_data[7*8-1:3*8];
-    @(negedge clk);
-    data = {package_data[3*8-1:0], 8'h00};
-    @(negedge clk);
-    start = 0;
+    begin
+      @(negedge clk);
+      reset = 1;
+      @(negedge clk);
+      reset = 0;
+      start = 1;
+      data = {src_port_r, dest_port_r};
+      @(negedge clk);
+      start = 0;
+      data = {len_udp_r, chks_udp_r}; // checksum for current test
+      @(negedge clk);
+      data = package_data[11*8-1:7*8];
+      @(negedge clk);
+      data = package_data[7*8-1:3*8];
+      @(negedge clk);
+      data = {package_data[3*8-1:0], 8'h00};
+      @(negedge clk);
+      start = 0;
+    end
   endtask
   
   
   task load_new_package_data;
     input [8*package_data_length-1:0] value;
-    package_data = value;
+    
+    begin
+      package_data = value;
+    end
   endtask
   
   
