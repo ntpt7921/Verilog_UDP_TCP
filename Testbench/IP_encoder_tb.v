@@ -28,7 +28,8 @@ module IP_encoder_tb ();
     clk = 0;
     checksum_in = 16'h0000;
     change_starting_info(4'd4, 4'd5, 8'd0,
-                         16'h1234, 3'b000, 13'h123, 8'h10, 6, // protocol: 17 is udp, 6 is tcp
+                         16'h1234, 3'b000, 13'b0_1111_0000_0000, 
+                         8'h18, 6, // protocol: 17 is udp, 6 is tcp
                          32'h9801_331b, 32'h980e_5e4b, 1'b1, // check: 0 is udp, 1 is tcp
                          package_data_length);
     load_new_package_data("Hello WorldHello World");
@@ -36,6 +37,24 @@ module IP_encoder_tb ();
     #14;
     $finish;  
   end
+  
+  
+  
+  integer fout; // for file output
+  initial begin
+    fout = $fopen("IP_out.dump", "wb");
+    @(posedge fin);
+    $fclose(fout);
+  end
+  
+  always @(posedge clk) begin
+    if (wr_en == 1) begin
+      $fwriteh(fout, "%u", {pkg_data[7:0], pkg_data[15:8], 
+                            pkg_data[23:16], pkg_data[31:24]});
+    end
+  end
+  
+  
 
 
   task change_starting_info;
@@ -75,7 +94,7 @@ module IP_encoder_tb ();
     $display("Total Length:\t\t*\t\t*\t(Create by module)");
     $display("Identification:\t\t%1d\t\t%1h", identification, identification);
     $display("Flags:\t\t\t%1d\t\t%1h", flag, flag);
-    $display("Fragment Offset:\t%1d\t\t%1h", frag_offset, frag_offset);
+    $display("Fragment Offset:\t%1d\t\t%1h", 8*frag_offset, frag_offset);
     $display("Time to Live:\t\t%1d\t\t%1h", time_to_live, time_to_live);
     $display("Protocol:\t\t%1d\t\t%1h", protocol, protocol);
     $display("Header Checksum:\t*\t\t*\t(Create by module)");

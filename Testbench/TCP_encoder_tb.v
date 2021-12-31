@@ -33,16 +33,32 @@ module TCP_encoder_tb ();
     len_in = package_data_length;
     
     change_ip_info(0, 0);
-    change_tcp_header_info('ha08f, 'h2694, 1, 2, 6'b11_1111, 3, 4);
+    change_tcp_header_info('ha08f, 'h2694, 1, 2, 6'b00_0000, 3, 4);
     change_tcp_option_info(9'b0_0000_0101, 16'h1234, 2, 
                            1, 64'h1111_1111_1111_1111, 0, 0, 0,
                            64'h1234_1234_1234_1234);
     
     send_tcp_data();
-    //@(posedge fin);
-    #20;
+    @(posedge fin);
+    #1;
     $finish;  
   end
+  
+  
+  integer fout; // for file output
+  initial begin
+    fout = $fopen("TCP_out.dump", "wb");
+    @(posedge fin);
+    $fclose(fout);
+  end
+  
+  always @(posedge clk) begin
+    if (wr_en == 1) begin
+      $fwriteh(fout, "%u", {pkg_data[7:0], pkg_data[15:8], 
+                            pkg_data[23:16], pkg_data[31:24]});
+    end
+  end
+  
   
   
   task load_new_package_data;

@@ -14,6 +14,7 @@ module UDP_decoder_tb ();
   parameter package_data_length = 11;
   reg [15:0] src_port_r, dest_port_r, len_udp_r, chks_udp_r;
   
+  
   initial begin
     clk = 0;
     
@@ -22,9 +23,11 @@ module UDP_decoder_tb ();
     change_udp_header_value('ha08f, 'h2694, len_udp, 16'h2560);
     send_udp_data();
     
-    #2;
+    @(posedge fin);
+    #1;
     $finish;  
   end
+  
   
   
   task change_ip_info;
@@ -109,7 +112,6 @@ module UDP_decoder_tb ();
              dut.bytes_left, dut.complete_checksum);
    // $dumpvars(0, UDP_decoder_tb);
   end
-  
   
   UDP_decoder dut 
   (.dest_ip(dest_ip), .src_ip(src_ip), .len_udp(len_udp), .data(data), .start(start),

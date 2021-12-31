@@ -19,10 +19,27 @@ module UDP_encoder_tb ();
     change_starting_info(32'h9801_331b, 32'h980e_5e4b, 'ha08f, 'h2694, package_data_length);
     load_new_package_data("Hello World");
     send_udp_data();
-    #6;
+    
+    @(posedge fin);
+    #1;
     $finish;  
   end
 
+  
+  integer fout; // for file output
+  initial begin
+    fout = $fopen("UDP_out.dump", "wb");
+    @(posedge fin);
+    $fclose(fout);
+  end
+  
+  always @(posedge clk) begin
+    if (wr_en == 1) begin
+      $fwriteh(fout, "%u", {pkg_data[7:0], pkg_data[15:8], 
+                            pkg_data[23:16], pkg_data[31:24]});
+    end
+  end
+  
 
   task change_starting_info;
     input [31:0] src_ip_value, dest_ip_value;
@@ -35,7 +52,7 @@ module UDP_encoder_tb ();
     
     // printing IP pseduo header field value
     $display("IP Pseudo Header Fields' Values:");
-    $display("UDP Length:\t\t%1d\t\t%1h", len_in, len_in);
+    $display("UDP Length:\t\t*\t\t*\t(Create within module)");
     $display("Source IP:\t\t%1d.%1d.%1d.%1d\t%1h", src_ip[31:24], 
                                                    src_ip[23:16], 
                                                    src_ip[15:8], 
