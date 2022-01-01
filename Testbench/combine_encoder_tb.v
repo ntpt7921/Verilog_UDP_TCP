@@ -47,12 +47,13 @@ module combine_encoder_tb ();
   initial begin
     clk = 0;
     load_new_package_data("Hello World");
-    change_ip_header_value(4'd4, 4'd5, 8'd0, 16'h1234, 
-                           3'b000, 13'h123, 8'h10, 
+    change_ip_header_value(4'd4, 4'd5, 8'd0, 
+                           16'h1234, 3'b010, 13'h0, 
+                           8'h10, 
                            32'h9801_331b, 32'h980e_5e4b); 
                            
     change_tcp_header_value('ha08f, 'h2694, 
-                            1, 2, 6'b11_1111, 3, 4,
+                            1, 2, 6'b11_0011, 3, 4,
                             9'b0_0000_0000, 5, 6, 7, 0, 8, 9, 10, 11,
                             package_data_length);
                             
@@ -66,6 +67,20 @@ module combine_encoder_tb ();
     
     @(posedge fin);
     $finish;
+  end
+  
+  integer fout; // for file output
+  initial begin
+    fout = $fopen("combine_out.dump", "wb");
+    @(posedge fin);
+    $fclose(fout);
+  end
+  
+  always @(posedge clk) begin
+    if (wr_en == 1) begin
+      $fwriteh(fout, "%u", {pkg_data[7:0], pkg_data[15:8], 
+                            pkg_data[23:16], pkg_data[31:24]});
+    end
   end
   
   
