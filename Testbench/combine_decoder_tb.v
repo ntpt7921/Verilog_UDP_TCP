@@ -96,7 +96,7 @@ module combine_decoder_tb ();
   initial begin
     clk = 0;
     
-    
+    /*
     load_new_package_data("Hello World");
     change_ip_header_value(4'd4, 4'd5, 8'd0, package_data_length + 40, // 28 for udp, 40 for tcp 
                            16'h1234, 3'b000, 13'h123, 8'h10, 6, // 6 for tcp, 17 for udp
@@ -108,11 +108,44 @@ module combine_decoder_tb ();
     send_ip_data();
     send_tcp_data(); // uncomment for tcp
     //send_udp_data(); // uncomment for udp
+    */
+    
+    read_combine_file();
     
     @(posedge fin);
     $finish;
   end
   
+  
+  task read_combine_file();
+    integer i;
+    reg [31:0] memory_input [0:65535]; // 8 bit memory with 2^16-1 entries
+    begin
+      // wipe memory
+      for (i = 0; i < 65536; i = i + 1)
+        memory_input[i] = 32'hxxxx_xxxx;
+      
+      // read into memory from file
+      //$readmemh("combine_in_TCP.txt", memory_input);
+      $readmemh("combine_in_UDP.txt", memory_input);
+      
+      // reset and start to decode
+      @(negedge clk);
+      reset = 1;
+      @(negedge clk);
+      reset = 0;
+      start = 1;
+      
+      // loop through memory for data read from file
+      i = 0;
+      while (memory_input[i] !== 32'hxxxx_xxxx) begin
+        data = memory_input[i];
+        i = i + 1;
+        @(negedge clk);
+      end
+      start = 0;
+    end
+  endtask
   
   
   task load_new_package_data;
@@ -315,10 +348,10 @@ module combine_decoder_tb ();
   end
   */
   
-  
+  /*
   // use this to see IP output
   initial begin
-    $display("  T\td\t\tstart\tclk\trst\tver\tIHL\tTofSe\tlen\tid\tflag\tfr_os\tTtoL\tprtcl\tsip\t\tdip\t\tl_tcp\tdout\t\twr_en\tok\tfin");
+    $display("  T\td\t\tstart\tclk\trst\tver\tIHL\tTofSe\tlen\tid\tflag\tfr_os\tTtoL\tprtcl\tsip\t\tdip\t\tl_out\tdout\t\twr_en\tok\tfin");
     $monitor("%3d\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h\t%h", 
              $time, data, start, clk, reset,
                     version, IHL, type_of_ser, total_length, identification, flag,
@@ -326,7 +359,7 @@ module combine_decoder_tb ();
                     len_ip_out, data_ip_out, wr_en_ip, ok_ip, fin_ip,
                     dut.enable_tcp_rd, dut.enable_udp_rd);
   end
-  
+  */
   
   /*
   // use this to see TCP output
@@ -343,7 +376,7 @@ module combine_decoder_tb ();
   end
   */
   
-  /*
+  
   // use this to see UDP output
   initial begin
     $display("  T\tdip\t\tstr\tclk\trst\tdp_udp\tsp_udp\tlen_udp\td_udp\t\twre_dup\tok_udp\tfin_udp");
@@ -352,7 +385,7 @@ module combine_decoder_tb ();
              dest_port_udp, src_port_udp, len_udp_data, data_udp_out,
              wr_en_udp, ok_udp, fin_udp, dut.udp_d.complete_checksum);
   end
-  */
+  
   
   combine_decoder dut (.data(data), .start(start), .clk(clk), .reset(reset), 
                        .version(version), .IHL(IHL), .type_of_ser(type_of_ser), 

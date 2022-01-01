@@ -17,7 +17,7 @@ module UDP_decoder_tb ();
   
   initial begin
     clk = 0;
-    
+
     load_new_package_data("Hello World");
     change_ip_info('h9801_331b, 'h980e_5e4b, package_data_length + 8);
     change_udp_header_value('ha08f, 'h2694, len_udp, 16'h2560);
@@ -27,7 +27,6 @@ module UDP_decoder_tb ();
     #1;
     $finish;  
   end
-  
   
   
   task change_ip_info;

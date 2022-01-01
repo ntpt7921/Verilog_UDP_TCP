@@ -48,7 +48,7 @@ module IP_decoder_tb ();
                            16'h1234, 3'b000, 13'h123, 8'h10, 17,
                            16'hd601, 32'h9801_331b, 32'h980e_5e4b); 
     send_ip_data();
-    #4;
+    #2;
     $finish;  
   end
   

@@ -112,9 +112,13 @@ module TCP_encoder (src_ip, dest_ip,
       next_state = WRITE_4;
     else if (state == WRITE_4)
       next_state = WRITE_5;
-    else if (state == WRITE_5 || state == OPTION)
-      if (option_word_left == 0) next_state = WRITE_DATA;
-      else next_state = OPTION;
+    else if (state == WRITE_5 || state == OPTION) begin
+      if (option_word_left != 0) next_state = OPTION;
+      else if (bytes_left != 0)
+        next_state = WRITE_DATA; 
+      else if (bytes_left == 0)
+        next_state = FIN; 
+    end
     else if (state == WRITE_DATA)
       if (bytes_left == 0) next_state = FIN;
       else next_state = WRITE_DATA;

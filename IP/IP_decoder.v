@@ -91,9 +91,13 @@ module IP_decoder (data, start, clk, reset,
       next_state = READ_4;
     else if (state == READ_4)
       next_state = READ_5;
-    else if (state == READ_5 || state == OPTION)
-      if (option_word_left == 0) next_state = READ_DATA;
-      else next_state = OPTION;
+    else if (state == READ_5 || state == OPTION) begin
+      if (option_word_left != 0) next_state = OPTION;
+      else if (bytes_left != 0)
+        next_state = READ_DATA;
+      else if (bytes_left == 0)
+        next_state = FIN;
+    end
     else if (state == READ_DATA)
       if (bytes_left == 0) next_state = FIN;
       else next_state = READ_DATA;
