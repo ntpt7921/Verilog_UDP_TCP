@@ -96,56 +96,23 @@ module combine_decoder_tb ();
   initial begin
     clk = 0;
     
-    /*
+    
     load_new_package_data("Hello World");
-    change_ip_header_value(4'd4, 4'd5, 8'd0, package_data_length + 40, // 28 for udp, 40 for tcp 
-                           16'h1234, 3'b000, 13'h123, 8'h10, 6, // 6 for tcp, 17 for udp
-                           16'hd5f8,  // d5f9 for udp, d5f8 for tcp
+    change_ip_header_value(4'd4, 4'd5, 8'd0, package_data_length + 28, // 28 for udp, 40 for tcp 
+                           16'h1234, 3'b000, 13'h123, 8'h10, 17, // 6 for tcp, 17 for udp
+                           16'hd5f9,  // d5f9 for udp, d5f8 for tcp
                            32'h9801_331b, 32'h980e_5e4b); 
-    change_tcp_header_value('ha08f, 'h2694, 1, 2, 5, 6'b11_1111, 3, 'hd528, 4); // uncomment for tcp
-    //change_udp_header_value('ha08f, 'h2694, package_data_length + 8, 'h2560); // uncomment for udp
+    //change_tcp_header_value('ha08f, 'h2694, 1, 2, 5, 6'b11_1111, 3, 'hd528, 4); // uncomment for tcp
+    change_udp_header_value('ha08f, 'h2694, package_data_length + 8, 'h2560); // uncomment for udp
     
     send_ip_data();
-    send_tcp_data(); // uncomment for tcp
-    //send_udp_data(); // uncomment for udp
-    */
+    //send_tcp_data(); // uncomment for tcp
+    send_udp_data(); // uncomment for udp
     
-    read_combine_file();
     
     @(posedge fin);
     $finish;
   end
-  
-  
-  task read_combine_file();
-    integer i;
-    reg [31:0] memory_input [0:65535]; // 8 bit memory with 2^16-1 entries
-    begin
-      // wipe memory
-      for (i = 0; i < 65536; i = i + 1)
-        memory_input[i] = 32'hxxxx_xxxx;
-      
-      // read into memory from file
-      //$readmemh("combine_in_TCP.txt", memory_input);
-      $readmemh("combine_in_UDP.txt", memory_input);
-      
-      // reset and start to decode
-      @(negedge clk);
-      reset = 1;
-      @(negedge clk);
-      reset = 0;
-      start = 1;
-      
-      // loop through memory for data read from file
-      i = 0;
-      while (memory_input[i] !== 32'hxxxx_xxxx) begin
-        data = memory_input[i];
-        i = i + 1;
-        @(negedge clk);
-      end
-      start = 0;
-    end
-  endtask
   
   
   task load_new_package_data;
@@ -306,7 +273,7 @@ module combine_decoder_tb ();
       
       // printing UDP header field value
       // source port, dest port, length, checksum
-      $display("TCP Header Fields' Values:");
+      $display("UDP Header Fields' Values:");
       $display("Source Port:\t\t%1d\t\t%1h", src_port_value, src_port_value);
       $display("Destination Port:\t%1d\t\t%1h", dest_port_value, dest_port_value);
       $display("Length:\t\t\t%1d\t\t%1h", dest_port_value, dest_port_value);

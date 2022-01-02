@@ -83,9 +83,13 @@ module TCP_decoder (dest_ip, src_ip, len_tcp, data, start, clk, reset,
   one_complement_adder #(.LENGTH(16)) add5 (.a1(temp2[15:0]), .a2(temp2[31:16]), .res(complete_checksum));
   
   
-  wire opt_decoder_clk;
-  assign opt_decoder_clk = ((next_state == OPTION && !option_av[0]) || reset) ? clk : 0;
-  TCP_option_decoder dut (.data(data), .clk(opt_decoder_clk), .reset(reset),
+  
+  // should not disable stuff by cutting clk, leads to unpredictable behavior
+  //wire opt_decoder_clk;
+  //assign opt_decoder_clk = ((next_state == OPTION && !option_av[0]) || reset) ? clk : 0;
+  wire [31:0] opt_data;
+  assign opt_data = (next_state == OPTION && !option_av[0]) ? data : 32'h0101_0101;
+  TCP_option_decoder dut (.data(opt_data), .clk(clk), .reset(reset),
                           .option_av(option_av), .mss(mss), .scale_wnd(scale_wnd),
                           .sack_nbr(sack_nbr), .sack_n0(sack_n0), .sack_n1(sack_n1), 
                           .sack_n2(sack_n2), .sack_n3(sack_n3), 
