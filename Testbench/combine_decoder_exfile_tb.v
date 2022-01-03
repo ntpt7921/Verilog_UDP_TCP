@@ -79,7 +79,7 @@ module combine_decoder_exfile_tb ();
         memory_input[i] = 32'hxxxx_xxxx;
       
       // read into memory from file
-      $readmemh("combine_in_TCP.txt", memory_input);
+      $readmemh("combine_in_UDP.txt", memory_input);
       //$readmemh("combine_in_UDP.txt", memory_input);
       
       // reset and start to decode
@@ -194,7 +194,7 @@ module combine_decoder_exfile_tb ();
   end
   */
   
-  
+  /*
   // use this to see TCP output
   wire [5:0] flag_tcp;
   assign flag_tcp = {f_urg, f_ack, f_psh, f_rst, f_syn, f_fin};
@@ -207,9 +207,9 @@ module combine_decoder_exfile_tb ();
              data_tcp_out, wr_en_tcp, ok_tcp, fin_tcp,
              dut.tcp_d.complete_checksum);
   end
+  */
   
   
-  /*
   // use this to see UDP output
   initial begin
     $display("  T\tdip\t\tstr\tclk\trst\tdp_udp\tsp_udp\tlen_udp\td_udp\t\twre_dup\tok_udp\tfin_udp");
@@ -218,7 +218,7 @@ module combine_decoder_exfile_tb ();
              dest_port_udp, src_port_udp, len_udp_data, data_udp_out,
              wr_en_udp, ok_udp, fin_udp, dut.udp_d.complete_checksum);
   end
-  */
+  
   
   combine_decoder dut (.data(data), .start(start), .clk(clk), .reset(reset), 
                        .version(version), .IHL(IHL), .type_of_ser(type_of_ser), 

@@ -27,7 +27,7 @@ module UDP_encoder (src_ip, dest_ip,
   parameter IDLE = 0;
   parameter WRITE_1 = 1;
   parameter WRITE_2 = 2;
-  parameter WRITE_DATA = 3;
+  parameter WRITE_3 = 3;
   parameter FIN = 4;
   
   
@@ -51,7 +51,7 @@ module UDP_encoder (src_ip, dest_ip,
   
   wire [31:0] data_checksum;
   wire enable_checksum;
-  assign enable_checksum = (next_state == WRITE_DATA) && data_av_dl;
+  assign enable_checksum = (next_state == WRITE_3) && data_av_dl;
   checksum_calculator #(.LENGTH(32)) add6
   (.in(data_dl), .reset(reset), .enable(enable_checksum), 
    .clk(clk), .checksum(data_checksum));
@@ -76,9 +76,9 @@ module UDP_encoder (src_ip, dest_ip,
     else if (state == WRITE_1)
       next_state = WRITE_2;
     else if (state == WRITE_2)
-      next_state = WRITE_DATA;
-    else if (state == WRITE_DATA) begin
-      if (bytes_left > 0) next_state = WRITE_DATA;
+      next_state = WRITE_3;
+    else if (state == WRITE_3) begin
+      if (bytes_left > 0) next_state = WRITE_3;
       else next_state = FIN;
     end else if (state == FIN) 
       next_state = FIN;
@@ -91,7 +91,7 @@ module UDP_encoder (src_ip, dest_ip,
       IDLE: bytes_left <= 0;
       WRITE_1: bytes_left <= len_in;
       WRITE_2: /* do nohting */;
-      WRITE_DATA: 
+      WRITE_3: 
         if (data_av_dl) 
           bytes_left <= (bytes_left < 4) ? 0 : (bytes_left - 4);
       FIN: /* do nothing */;
@@ -113,7 +113,7 @@ module UDP_encoder (src_ip, dest_ip,
       WRITE_2: begin
         pkg_data <= {len_out, 16'h0000};
       end
-      WRITE_DATA: begin
+      WRITE_3: begin
         if (data_av_dl) begin
           wr_en <= 1;
           pkg_data <= data_dl;

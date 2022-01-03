@@ -57,7 +57,7 @@ module UDP_decoder (dest_ip, src_ip, len_udp, data,
   parameter IDLE = 4'd0;
   parameter READ_1 = 4'd1;
   parameter READ_2 = 4'd2;
-  parameter READ_DATA = 4'd3;
+  parameter READ_3 = 4'd3;
   parameter FIN = 4'd4;
   
   reg [2:0] state, next_state;
@@ -72,10 +72,10 @@ module UDP_decoder (dest_ip, src_ip, len_udp, data,
     else if (state == READ_1)
       next_state = READ_2;
     else if (state == READ_2)
-      next_state = READ_DATA;
-    else if (state == READ_DATA)
+      next_state = READ_3;
+    else if (state == READ_3)
       if (bytes_left == 0) next_state = FIN;
-      else next_state = READ_DATA;
+      else next_state = READ_3;
     else if (state == FIN) 
       next_state = FIN;
     else next_state = IDLE;
@@ -93,7 +93,7 @@ module UDP_decoder (dest_ip, src_ip, len_udp, data,
         bytes_left <= (bytes_left > 4) ? (bytes_left - 4) : 0;
         if (data[15:0] == 16'h0000) no_checksum <= 1;
       end
-      READ_DATA: bytes_left <= (bytes_left > 4) ? (bytes_left - 4) : 0;
+      READ_3: bytes_left <= (bytes_left > 4) ? (bytes_left - 4) : 0;
       FIN: /* do nothing */;
       default: bytes_left <= 0;
     endcase
@@ -116,7 +116,7 @@ module UDP_decoder (dest_ip, src_ip, len_udp, data,
       READ_2: begin
         len_data <= data[31:16] - 8;
       end
-      READ_DATA: begin
+      READ_3: begin
         data_udp <= data;
         wr_en <= 1;
       end

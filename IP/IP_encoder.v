@@ -59,8 +59,7 @@ module IP_encoder (version, IHL, type_of_ser,
 
 
 
-  wire [31:0] temp1, temp2, temp3,temp4;
-  wire [31:0] data_checksum;
+  wire [31:0] temp1, temp2, temp3, temp4;
   wire [15:0] accum_checksum;
   
   one_complement_adder #(.LENGTH(32)) add1 

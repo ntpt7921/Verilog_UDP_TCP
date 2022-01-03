@@ -14,7 +14,7 @@ Về phần `Combine`, đây là phần nối tổng hợp lại cái module IP,
 
 Tệp `Documetation` chứa các tài liệu và ghi chú phục vụ cho việc hiện thực. Nó chứa ghi chú chi tiết cho giao thức UDP, TCP và IP, sơ đồ khối của toàn hệ thống (tức sơ đồ khối của các module phần combine), sơ đồ khối và state diagram từng gói tin lớn (các module UDP, TCP và IP) và các tài liệu liên quan. Các module lớn của các phần IP, TCP, UDP sẽ có state diagram với tên `<tên module>_sd.svg`. Đồng thời các module trên cũng sẽ có sơ đồ khối với tên `<tên module>_bd.svg`.
 
-Tệp `ExternalPackageTest` chứa các file dump dùng để kiểm trong Wireshark. Nó chứa các file hexdump Wireshark có thể đọc được dưới định dạng `.wsdump` và các file binary gói tin lấy từ Wireshark để đưa vào module kiểm thử.
+Tệp `ExternalPackageTest` chứa các file dump dùng để kiểm trong Wireshark.
 
 ## Chạy file Verilog
 

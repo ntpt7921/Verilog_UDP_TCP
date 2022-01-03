@@ -62,7 +62,7 @@ module combine_encoder_tb ();
     
     // UDP checksum is 0x2560
     // TCP checksum without any option is 0xd528
-    udp0_tcp1 = 1;
+    udp0_tcp1 = 0;
     start_test();
     
     @(posedge fin);

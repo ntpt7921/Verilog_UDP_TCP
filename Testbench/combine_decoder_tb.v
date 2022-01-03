@@ -98,16 +98,16 @@ module combine_decoder_tb ();
     
     
     load_new_package_data("Hello World");
-    change_ip_header_value(4'd4, 4'd5, 8'd0, package_data_length + 28, // 28 for udp, 40 for tcp 
-                           16'h1234, 3'b000, 13'h123, 8'h10, 17, // 6 for tcp, 17 for udp
-                           16'hd5f9,  // d5f9 for udp, d5f8 for tcp
+    change_ip_header_value(4'd4, 4'd5, 8'd0, package_data_length + 40, // 28 for udp, 40 for tcp 
+                           16'h1234, 3'b000, 13'h123, 8'h10, 6, // 6 for tcp, 17 for udp
+                           16'hd5f8,  // d5f9 for udp, d5f8 for tcp
                            32'h9801_331b, 32'h980e_5e4b); 
-    //change_tcp_header_value('ha08f, 'h2694, 1, 2, 5, 6'b11_1111, 3, 'hd528, 4); // uncomment for tcp
-    change_udp_header_value('ha08f, 'h2694, package_data_length + 8, 'h2560); // uncomment for udp
+    change_tcp_header_value('ha08f, 'h2694, 1, 2, 5, 6'b11_1111, 3, 'hd528, 4); // uncomment for tcp
+    //change_udp_header_value('ha08f, 'h2694, package_data_length + 8, 'h2560); // uncomment for udp
     
     send_ip_data();
-    //send_tcp_data(); // uncomment for tcp
-    send_udp_data(); // uncomment for udp
+    send_tcp_data(); // uncomment for tcp
+    //send_udp_data(); // uncomment for udp
     
     
     @(posedge fin);
@@ -315,7 +315,7 @@ module combine_decoder_tb ();
   end
   */
   
-  /*
+  
   // use this to see IP output
   initial begin
     $display("  T\td\t\tstart\tclk\trst\tver\tIHL\tTofSe\tlen\tid\tflag\tfr_os\tTtoL\tprtcl\tsip\t\tdip\t\tl_out\tdout\t\twr_en\tok\tfin");
@@ -326,7 +326,7 @@ module combine_decoder_tb ();
                     len_ip_out, data_ip_out, wr_en_ip, ok_ip, fin_ip,
                     dut.enable_tcp_rd, dut.enable_udp_rd);
   end
-  */
+  
   
   /*
   // use this to see TCP output
@@ -343,7 +343,7 @@ module combine_decoder_tb ();
   end
   */
   
-  
+  /*
   // use this to see UDP output
   initial begin
     $display("  T\tdip\t\tstr\tclk\trst\tdp_udp\tsp_udp\tlen_udp\td_udp\t\twre_dup\tok_udp\tfin_udp");
@@ -352,7 +352,7 @@ module combine_decoder_tb ();
              dest_port_udp, src_port_udp, len_udp_data, data_udp_out,
              wr_en_udp, ok_udp, fin_udp, dut.udp_d.complete_checksum);
   end
-  
+  */
   
   combine_decoder dut (.data(data), .start(start), .clk(clk), .reset(reset), 
                        .version(version), .IHL(IHL), .type_of_ser(type_of_ser), 
